@@ -1,4 +1,5 @@
 // app/services/auth.server.ts
+import { redirect } from '@remix-run/node';
 import { Authenticator } from "remix-auth";
 import { sessionStorage } from "~/services/session.server";
 import { PrismaClient } from "@prisma/client"; // Prisma クライアントを使ってログインする
@@ -57,3 +58,12 @@ authenticator.use(
   }),
   "user-pass" // ストラテジーの名前を指定
 );
+
+// 共通認証処理の関数を追加
+export async function requireAuthenticatedUser(request: Request) {
+  const user = await authenticator.isAuthenticated(request);
+  if (!user) {
+    throw redirect('/login');
+  }
+  return user;
+}
