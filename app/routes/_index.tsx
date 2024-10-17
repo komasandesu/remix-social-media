@@ -14,9 +14,6 @@ export default function Index() {
       <Link to='/posts' className="text-blue-500 hover:underline">
         ポスト一覧
       </Link>
-      <Link to='/substring_posts' className="text-blue-500 hover:underline mt-4">
-        部分文字列一覧
-      </Link>
       <Link to='/login' className="text-blue-500 hover:underline mt-4">
         ログイン
       </Link>

@@ -5,16 +5,43 @@ import { Link, useLoaderData } from '@remix-run/react';
 
 import { postRepository } from '../models/post.server';
 
-export const loader = async () => {
-  const posts = await postRepository.findAll();
+import { authenticator } from '~/services/auth.server';
 
-  return json(posts);
+import FavoriteButton from '~/routes/components/FavoriteButton';
+import { favoriteRepository } from '../models/favorite.server';
+
+
+type PostWithFavorite = SerializeFrom<Post> & { 
+  isFavorite: boolean; 
+  favoriteCount: number; // お気に入り数を追加
+};
+
+export const loader = async ({ request }: { request: Request }) => {
+  const user = await authenticator.isAuthenticated(request);
+
+  const substringPosts = await postRepository.findAllWithFavorites(user?.id);
+
+  // 各投稿のお気に入り数を取得
+  const postsWithFavoriteCount = await Promise.all(
+    substringPosts.map(async (post) => {
+      const favoriteCount = await favoriteRepository.countFavorites(post.id);
+      return {
+        ...post,
+        favoriteCount,
+      };
+    })
+  );
+
+  return json({ posts: postsWithFavoriteCount, user });
 };
 
 type PostType = SerializeFrom<Post>;
 
 export default function PostIndex() {
-  const posts: PostType[] = useLoaderData();
+  const { posts, user } = useLoaderData<{ 
+    posts: PostWithFavorite[], 
+    user: { id: string } | null 
+  }>();
   
   return (
     <div className="container mx-auto p-4">
@@ -33,14 +60,19 @@ export default function PostIndex() {
       </Link>
 
       <ul className="space-y-2">
-        {posts.map((post: PostType) => (
-          <li key={post.id}>
+        {posts.map((post) => (
+          <li key={post.id} className="flex items-center justify-between">
             <Link 
-              to={`/posts/${post.id}`} 
-              className="block text-lg text-blue-500 hover:underline"
+              to={`/substring_posts/${post.id}`} 
+              className="text-lg text-blue-500 hover:underline"
             >
               {post.title}
             </Link>
+            <FavoriteButton 
+              initialIsFavorite={post.isFavorite}
+              initialFavoriteCount={post.favoriteCount}
+              PostId={post.id}
+            />
           </li>
         ))}
       </ul>
