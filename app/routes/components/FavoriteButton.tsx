@@ -4,27 +4,41 @@ import { useFetcher } from '@remix-run/react';
 
 interface FavoriteButtonProps {
   PostId: number;
-  initialIsFavorite: boolean;
-  initialFavoriteCount: number; // お気に入り数を受け取る
 }
 
 // サーバーからのレスポンスの型定義
+interface FavoriteResponse {
+  isFavorite: boolean;
+  favoriteCount: number;
+}
+
 interface ToggleFavoriteResponse {
   success: boolean;
   added: boolean;
-  favoriteCount: number; // お気に入りの最新の件数を返す
+  favoriteCount: number;
 }
 
-const FavoriteButton: React.FC<FavoriteButtonProps> = ({ PostId, initialIsFavorite, initialFavoriteCount }) => {
-  const [isFavorite, setIsFavorite] = useState(initialIsFavorite);
-  const [favoriteCount, setFavoriteCount] = useState(initialFavoriteCount); // お気に入りの数を管理
-  const fetcher = useFetcher<ToggleFavoriteResponse>();
+const FavoriteButton: React.FC<FavoriteButtonProps> = ({ PostId }) => {
+  const fetcher = useFetcher<FavoriteResponse | ToggleFavoriteResponse>();
+  const [isFavorite, setIsFavorite] = useState<boolean | null>(null);
+  const [favoriteCount, setFavoriteCount] = useState<number | null>(null);
 
-  // fetcher.dataの変更を監視し、レスポンスを元に状態を更新
+  // 初期データを取得
   useEffect(() => {
-    if (fetcher.data && fetcher.data.success) {
+    if (isFavorite === null && favoriteCount === null) {
+      // 初回ロード時のみデータをフェッチ
+      fetcher.load(`/resources/favorite?PostId=${PostId}`);
+    }
+  }, [PostId, isFavorite, favoriteCount]); // isFavorite と favoriteCount の初期値が null のときのみロード
+
+  // fetcher.data の変更を監視し、状態を更新
+  useEffect(() => {
+    if (fetcher.data && 'isFavorite' in fetcher.data) {
+      setIsFavorite(fetcher.data.isFavorite);
+      setFavoriteCount(fetcher.data.favoriteCount);
+    } else if (fetcher.data && fetcher.data.success) {
       setIsFavorite(fetcher.data.added);
-      setFavoriteCount(fetcher.data.favoriteCount); // お気に入り数も更新
+      setFavoriteCount(fetcher.data.favoriteCount);
     }
   }, [fetcher.data]);
 
@@ -34,6 +48,11 @@ const FavoriteButton: React.FC<FavoriteButtonProps> = ({ PostId, initialIsFavori
       { method: 'POST', action: '/resources/favorite' }
     );
   };
+
+  // 初期データがロードされるまでローディング表示
+  if (isFavorite === null || favoriteCount === null) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="favorite-button">

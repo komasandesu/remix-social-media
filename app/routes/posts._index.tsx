@@ -69,8 +69,6 @@ export default function PostIndex() {
               {post.title}
             </Link>
             <FavoriteButton 
-              initialIsFavorite={post.isFavorite}
-              initialFavoriteCount={post.favoriteCount}
               PostId={post.id}
             />
           </li>
