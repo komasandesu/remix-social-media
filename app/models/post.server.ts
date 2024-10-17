@@ -50,6 +50,23 @@ class PostRepository {
     }
     return post;
   }
+
+  async findAllWithFavorites(userId?: string) {
+    const substringPosts = await prisma.post.findMany({
+      include: {
+        Favorite: {
+          where: {
+            userId: userId,
+          },
+        },
+      },
+    });
+
+    return substringPosts.map(post => ({
+      ...post,
+      isFavorite: post.Favorite.length > 0,
+    }));
+  }
 }
 
 const postRepository = new PostRepository();

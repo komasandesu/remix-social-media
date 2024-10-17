@@ -16,19 +16,20 @@ model Post {
   updatedAt DateTime @updatedAt
   authorId  String
   author    User     @relation(fields: [authorId], references: [id])
+
+  Favorite Favorite[]
 }
 
 
-model SubstringPost {
+model Favorite {
   id        Int      @id @default(autoincrement())
-  
-  mainSubject  String   // ○○の部分に相当するフィールド
-  specificPart String   // ××の部分に相当するフィールド
-
+  userId    String
+  PostId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  post      Post     @relation(fields: [PostId], references: [id])
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  authorId  String
-  author    User     @relation(fields: [authorId], references: [id])
+
+  @@unique([userId, PostId]) // ユーザーが同じ投稿を複数回お気に入りできないようにする
 }
 
 model User {
@@ -41,5 +42,6 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   posts     Post[]
-  substring_posts     SubstringPost[]
+
+  Favorite Favorite[]
 }
