@@ -49,11 +49,6 @@ const FavoriteButton: React.FC<FavoriteButtonProps> = ({ PostId }) => {
     );
   };
 
-  // 初期データがロードされるまでローディング表示
-  if (isFavorite === null || favoriteCount === null) {
-    return <div>Loading...</div>;
-  }
-
   return (
     <div className="favorite-button">
       <button
