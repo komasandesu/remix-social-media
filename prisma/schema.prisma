@@ -17,7 +17,12 @@ model Post {
   authorId  String
   author    User     @relation(fields: [authorId], references: [id])
 
-  Favorite Favorite[]
+  Favorite  Favorite[]
+
+  // 返信（リプライ）に関するフィールド
+  parentId  Int?     // 親投稿ID
+  parent    Post?    @relation("PostReply", fields: [parentId], references: [id]) // 親の投稿
+  replies   Post[]   @relation("PostReply") // 返信（子投稿）
 }
 
 
