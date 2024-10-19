@@ -11,6 +11,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const title = formData.get('title') as string | null;
   const content = formData.get('content') as string | null;
   const postId = Number(formData.get('postId'));
+  const redirectTo = formData.get('redirectTo') as string | null;
   
   // 入力のバリデーション
   if (!title || !content || isNaN(postId)) {
@@ -27,7 +28,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     });
     
     // リダイレクト処理
-    return redirect(`/posts/${postId}`); // リダイレクト先を元の投稿ページに設定
+    return redirect(redirectTo || `/posts/${postId}`); // リダイレクト先を元の投稿ページに設定
   } catch (error) {
     console.error('Failed to create reply:', error);
     return json({ error: 'Failed to create reply' }, { status: 500 });

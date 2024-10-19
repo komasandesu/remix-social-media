@@ -4,9 +4,10 @@ import { useState } from 'react';
 
 interface ReplyFormProps {
   postId: number;
+  redirectTo?: string;
 }
 
-const ReplyForm: React.FC<ReplyFormProps> = ({ postId }) => {
+const ReplyForm: React.FC<ReplyFormProps> = ({ postId, redirectTo }) => {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
 
@@ -42,6 +43,7 @@ const ReplyForm: React.FC<ReplyFormProps> = ({ postId }) => {
         onChange={(e) => setContent(e.target.value)}
       />
       <input type="hidden" name="postId" value={postId} />
+      <input type="hidden" name="redirectTo" value={redirectTo || `/posts/${postId}`} />
       <button
         type="submit"
         className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition mt-2"

@@ -19,17 +19,17 @@ type Reply = {
   authorId: string
 };
 
-type Post = {
-  id: number;
-  title: string;
-  content: string;
-  createdAt: string;
-  author: {
-    name: string;
-  };
-  parentId: number | null; // 親投稿ID
-  replies: Reply[]; // リプライの配列
-};
+// type Post = {
+//   id: number;
+//   title: string;
+//   content: string;
+//   createdAt: string;
+//   author: {
+//     name: string;
+//   };
+//   parentId: number | null; // 親投稿ID
+//   replies: Reply[]; // リプライの配列
+// };
 
 export const loader: LoaderFunction = async ({ params }) => {
   const postId = params.postId ? parseInt(params.postId, 10) : null;
@@ -130,7 +130,7 @@ export default function PostShow() {
         </button>
       </Form>
       <ReplyList replies={post.replies} />
-      <ReplyForm postId={post.id} />
+      <ReplyForm postId={post.id}/>
     </div>
   );
 }
