@@ -17,4 +17,7 @@ export default defineConfig({
     host: true, // これで全てのインターフェースでアクセスできるようになります
     port: 5173, // 必要に応じてポート番号を指定
   },
+  optimizeDeps: {
+    exclude: ["@mapbox"],
+  },
 });
