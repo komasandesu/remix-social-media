@@ -6,12 +6,10 @@ import { Link, useLoaderData } from '@remix-run/react';
 
 import { postRepository } from '../models/post.server';
 
-import { authenticator } from '~/services/auth.server';
-
 import FavoriteButton from '~/routes/components/FavoriteButton';
 
 
-export const loader = async ({ request }: { request: Request }) => {
+export const loader = async () => {
   // 投稿データを取得する
   const Posts = await postRepository.findAllWithoutReplies();
 
