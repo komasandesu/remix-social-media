@@ -6,18 +6,6 @@ import { Post } from '.prisma/client';
 const prisma = new PrismaClient();
 
 class PostRepository {
-  async create(params: { title: string; content: string; authorId: string }) {
-    const { title, content, authorId } = params;
-    if (!title || !content) throw new Error('Title and content are required');
-    return prisma.post.create({
-      data: {
-        title,
-        content,
-        authorId, // authorIdをdataに追加
-      },
-    });
-  }
-
   async find(params: { id: number }) {
     const post = await prisma.post.findUnique({ where: { id: params.id } });
     if (!post) {
@@ -30,9 +18,59 @@ class PostRepository {
     return prisma.post.findMany();
   }
 
-  async delete(params: { id: number }) {
+  async create(params: { title: string; content: string; authorId: string }) {
+    const { title, content, authorId } = params;
+    if (!title || !content) throw new Error('Title and content are required');
+    return prisma.post.create({
+      data: {
+        title,
+        content,
+        authorId, // authorIdをdataに追加
+      },
+    });
+  }
+
+  async delete(params: { id: number, userId: string }) {
+    // 1. 投稿を取得して作成者を確認
+    const post = await prisma.post.findUnique({
+      where: { id: params.id },
+    });
+    if (!post) {
+      throw new Error('Post not found');
+    }
+    // 投稿の作成者と削除をリクエストしたユーザーが一致するか確認
+    if (post.authorId !== params.userId) {
+      throw new Error('You are not authorized to delete this post');
+    }
+    await prisma.post.deleteMany({
+      where: { parentId: params.id },
+    });
+    await prisma.favorite.deleteMany({
+      where: { PostId: params.id },
+    });
     return prisma.post.delete({
       where: { id: params.id },
+    });
+  }
+  
+  async update(params: { id: number, title: string, content: string, userId: string }) {
+    const { id, title, content, userId } = params;
+
+    // 投稿者が現在のユーザーか確認
+    const post = await prisma.post.findUnique({ where: { id } });
+
+    if (!post) {
+      throw new Error(`Post with id ${id} not found`);
+    }
+
+    if (post.authorId !== userId) {
+      throw new Error('You are not authorized to edit this post');
+    }
+
+    // 投稿のタイトルと内容を更新
+    return prisma.post.update({
+      where: { id },
+      data: { title, content },
     });
   }
 
@@ -66,16 +104,21 @@ class PostRepository {
     const post = await prisma.post.findUnique({
       where: { id: postId },
       include: {
-        author: true,  // authorリレーションを含めて取得
-        replies: true,  // repliesリレーションを含めて取得
+        author: true,  // 投稿の著者情報を含めて取得
+        replies: {
+          include: {
+            author: true, // リプライの著者情報を含めて取得
+          },
+        },
       },
     });
-
+  
     if (!post) {
       throw new Error(`Post with id ${postId} not found`);
     }
     return post;
   }
+  
   
 
   // リプライの作成
