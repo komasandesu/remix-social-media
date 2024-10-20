@@ -1,10 +1,11 @@
-import FavoriteButton from './FavoriteButton';
-import DeleteButton from './PostDeleteButton';
+// app/routes/components/ReplyList.tsx
 import { User } from '.prisma/client';
+import PostItem from './PostItem';
 
 // 型定義
 type Reply = {
   id: number;
+  parentId: number;
   title: string;
   content: string;
   createdAt: string;
@@ -26,22 +27,22 @@ export default function ReplyList({
   }
 
   return (
-    <div className="mt-4">
-      <h2 className="text-2xl font-bold">リプライ</h2>
-      <ul className="list-disc ml-6">
+    <div className="mt-4 border-t border-gray-300 pt-4">
+      <h2 className="text-2xl font-bold mb-4">リプライ</h2>
+      <ul className="space-y-4">
         {replies.map((reply) => (
-          <li key={reply.id} className="mb-2">
-            <h3 className="text-lg font-semibold">{reply.title}</h3>
-            <p className="text-gray-700">{reply.content}</p>
-            <p className="text-gray-500">投稿者: {reply.author?.name || '不明'}</p>
-            <div className="flex items-center space-x-4 mt-2">
-              <FavoriteButton PostId={reply.id} />
-              {/* 現在のユーザーとリプライの著者が一致する場合に削除ボタンを表示 */}
-              {reply.authorId === userId && (
-                <DeleteButton postId={reply.id} redirectTo={`/posts/${postId}`} />
-              )}
-            </div>
-          </li>
+          <PostItem
+            key={reply.id}
+            id={reply.id}
+            parentId={reply.parentId}
+            title={reply.title}
+            content={reply.content}
+            createdAt={reply.createdAt}
+            authorId={reply.authorId}
+            author={reply.author}
+            userId={userId}
+            postId={postId} // 親投稿IDを渡す
+          />
         ))}
       </ul>
     </div>

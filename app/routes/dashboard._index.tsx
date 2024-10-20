@@ -28,11 +28,6 @@ export default function Dashboard() {
 
   return (
     <div className="container mx-auto p-6 max-w-3xl">
-      <nav className="mb-6 flex justify-between">
-        <Link to="/" className="text-blue-500 hover:underline">ホーム</Link>
-        <Link to="/posts" className="text-blue-500 hover:underline">ポスト一覧</Link>
-      </nav>
-
       <div className="bg-white shadow-md rounded-lg p-6">
         <h1 className="text-2xl font-bold mb-4">ダッシュボード</h1>
         {user ? (

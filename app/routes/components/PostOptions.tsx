@@ -1,26 +1,22 @@
 // app/routes/components/PostOptions.tsx
 import { useState } from 'react';
-import { Form, useActionData } from '@remix-run/react';
 import PostEditForm from './PostEditForm';
 import ReplyForm from './ReplyForm';
 import DeleteButton from './PostDeleteButton';
 
 interface PostOptionsProps {
     postId: number;
+    parentId: number;
     authorId: string; // 投稿者のID
     currentUserId: string; // 現在のユーザーのID
     title?: string;    // タイトルを追加
     content?: string;  // コンテンツを追加
 }
 
-const PostOptions: React.FC<PostOptionsProps> = ({ postId, authorId, currentUserId, title, content }) => {
-    const [isOpen, setIsOpen] = useState(false);
+const PostOptions: React.FC<PostOptionsProps> = ({ postId, parentId, authorId, currentUserId, title, content }) => {
     const [isEditModalOpen, setEditModalOpen] = useState(false);
     const [isReplyModalOpen, setEditReplyOpen] = useState(false);
 
-    const toggleOptions = () => {
-        setIsOpen((prev) => !prev);
-    };
 
     const toggleEditModal = () => {
         setEditModalOpen((prev) => !prev);
@@ -28,14 +24,6 @@ const PostOptions: React.FC<PostOptionsProps> = ({ postId, authorId, currentUser
 
     const toggleReplyModal = () => {
         setEditReplyOpen((prev) => !prev);
-    };
-
-    const handleDelete = (event: React.MouseEvent<HTMLButtonElement>) => {
-        // 確認ダイアログを表示
-        const confirmDelete = window.confirm("本当に削除しますか？");
-        if (!confirmDelete) {
-            event.preventDefault(); // 確認が取れない場合はデフォルトの動作をキャンセル
-        }
     };
 
     return (
@@ -82,7 +70,8 @@ const PostOptions: React.FC<PostOptionsProps> = ({ postId, authorId, currentUser
             {isReplyModalOpen && (
                 <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
                     <div className="bg-white p-4 rounded shadow-md">
-                        <ReplyForm postId={postId} onClose={toggleReplyModal} />
+                        {/* 親投稿のIDがない場合は、投稿IDをそのまま使う */}
+                        <ReplyForm postId={parentId || postId} onClose={toggleReplyModal} />
                         <button
                             onClick={toggleReplyModal}
                             className="mt-4 bg-red-500 text-white py-2 px-4 rounded"

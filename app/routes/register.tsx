@@ -21,6 +21,12 @@ export async function action({ request }: ActionFunctionArgs) {
         return { error: "名前、メールアドレス、パスワードは必須です。" };
     }
 
+    // ユーザー名がアルファベットと数字のみに限定されているかを確認する
+    const alphaNumericRegex = /^[a-zA-Z0-9]+$/;
+    if (!alphaNumericRegex.test(name)) {
+        return { error: "ユーザー名はアルファベットと数字のみ使用できます。" };
+    }
+
     // ユーザーが既に存在するか確認
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
@@ -54,7 +60,7 @@ export default function Register() {
     return (
         <div className="flex items-center justify-center min-h-screen">
             <div className="container mx-auto p-6 max-w-lg bg-white shadow-lg rounded-lg">
-                <h1 className="text-2xl font-bold mb-4 text-center ">新規登録</h1>
+                <h1 className="text-2xl font-bold mb-4 text-center text-black">新規登録</h1>
                 {actionData?.error && <p className="text-red-500 mb-4 text-center">{actionData.error}</p>} {/* エラーメッセージを表示 */}
                 
                 <Form method="post" action="/register" className="space-y-4">

@@ -94,6 +94,9 @@ class PostRepository {
       where: {
         parentId: null, // 返信ではない投稿のみを取得
       },
+      orderBy: {
+        createdAt: 'desc',
+      },
     });
   
     return Posts;
@@ -109,6 +112,9 @@ class PostRepository {
           include: {
             author: true, // リプライの著者情報を含めて取得
           },
+          orderBy: {
+            createdAt: 'asc',
+          },
         },
       },
     });
@@ -117,6 +123,19 @@ class PostRepository {
       throw new Error(`Post with id ${postId} not found`);
     }
     return post;
+  }
+
+  // 指定されたユーザーIDの投稿を取得するメソッド
+  async findByUserId(userId: string) {
+    return prisma.post.findMany({
+      where: {
+        authorId: userId,
+        parentId: null, // 親投稿のみを取得
+      },
+      orderBy: {
+        createdAt: 'desc', // 作成日で新しい順に並べる
+      },
+    });
   }
   
   
