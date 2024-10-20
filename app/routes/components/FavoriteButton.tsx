@@ -50,20 +50,20 @@ const FavoriteButton: React.FC<FavoriteButtonProps> = ({ PostId }) => {
   };
 
   return (
-    <div className="favorite-button">
-      <button
-        onClick={handleFavoriteClick}
-        className={`p-2 rounded-full ${
-          isFavorite ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-600'
-        }`}
-        disabled={fetcher.state === 'submitting'}
-      >
+    <button
+      onClick={handleFavoriteClick}
+      className={`flex items-center space-x-2 p-2 rounded-full ${
+        isFavorite ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-600'
+      }`}
+      disabled={fetcher.state === 'submitting'}
+    >
+      <span className="text-lg">
         {isFavorite ? '★' : '☆'}
-      </button>
-      <p className="favorite-count">
-        {favoriteCount} 件のお気に入り
-      </p>
-    </div>
+      </span>
+      <span className="text-sm">
+        {favoriteCount}
+      </span>
+    </button>
   );
 };
 
