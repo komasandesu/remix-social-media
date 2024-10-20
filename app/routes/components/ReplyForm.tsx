@@ -5,9 +5,10 @@ import { useState } from 'react';
 interface ReplyFormProps {
   postId: number;
   redirectTo?: string;
+  onClose?: () => void;
 }
 
-const ReplyForm: React.FC<ReplyFormProps> = ({ postId, redirectTo }) => {
+const ReplyForm: React.FC<ReplyFormProps> = ({ postId, redirectTo, onClose }) => {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
 
@@ -15,6 +16,9 @@ const ReplyForm: React.FC<ReplyFormProps> = ({ postId, redirectTo }) => {
     // フォームが送信された後にタイトルとコンテンツを空にする
     setTitle('');
     setContent('');
+    if (onClose) {
+      onClose();
+    }
   };
 
   return (

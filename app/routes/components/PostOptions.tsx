@@ -40,34 +40,26 @@ const PostOptions: React.FC<PostOptionsProps> = ({ postId, authorId, currentUser
 
     return (
         <div>
-            <button
-                onClick={toggleOptions}
-                className="bg-gray-300 text-black py-1 px-2 rounded"
+            <div className="inline-flex">
+            <button 
+                onClick={toggleReplyModal} 
+                className="bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600 transition"
             >
-                オプション
+                返信
             </button>
-            {isOpen && (
-                <div className="absolute bg-white border rounded shadow-md mt-2">
-                    <button 
-                        onClick={toggleReplyModal} 
-                        className="bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600 transition"
-                    >
-                        返信
-                    </button>
-                    {/* 現在のユーザーが投稿者の場合のみ編集・削除ボタンを表示 */}
-                    {currentUserId === authorId && (
-                        <div>
-                        <button 
-                            onClick={toggleEditModal} 
-                            className="bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600 transition"
-                        >
-                            編集
-                        </button>
-                        <DeleteButton postId={postId} />
-                        </div>
-                    )}
-                </div>
+            {/* 現在のユーザーが投稿者の場合のみ編集・削除ボタンを表示 */}
+            {currentUserId === authorId && (
+                <>
+                <button
+                    onClick={toggleEditModal}
+                    className="bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600 transition"
+                >
+                    編集
+                </button>
+                <DeleteButton postId={postId} />
+                </>
             )}
+            </div>
             {/* 編集モーダルの表示 */}
             {isEditModalOpen && (
                 <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
@@ -90,7 +82,7 @@ const PostOptions: React.FC<PostOptionsProps> = ({ postId, authorId, currentUser
             {isReplyModalOpen && (
                 <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
                     <div className="bg-white p-4 rounded shadow-md">
-                        <ReplyForm postId={postId}/>
+                        <ReplyForm postId={postId} onClose={toggleReplyModal} />
                         <button
                             onClick={toggleReplyModal}
                             className="mt-4 bg-red-500 text-white py-2 px-4 rounded"

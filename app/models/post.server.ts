@@ -134,6 +134,12 @@ class PostRepository {
 
     if (!parentPost) throw new Error('Parent post does not exist');
 
+    // 親投稿がリプライでないことを確認（リプライの場合はparentIdが存在する）
+    if (parentPost.parentId) {
+      throw new Error('Replies to replies are not allowed');
+    }
+
+
     return prisma.post.create({
       data: {
         title,

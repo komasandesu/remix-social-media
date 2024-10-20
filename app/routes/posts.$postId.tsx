@@ -66,7 +66,7 @@ export default function PostShow() {
         <Link to="/" className="text-blue-500 hover:underline">ホーム</Link>
         <Link to="/posts" className="text-blue-500 hover:underline">一覧に戻る</Link>
       </nav>
-
+      
       <article className="mb-6">
         <h1 className="text-3xl font-bold mb-2">{post.title}</h1>
         <p className="text-gray-700 mb-4">{post.content}</p>
@@ -74,16 +74,18 @@ export default function PostShow() {
         <p className="text-gray-500 mb-2">投稿者: {post.author.name}</p>
         {/* 投稿時間を表示 */}
         <p className="text-gray-500">投稿日時: {now}</p>
-        <FavoriteButton 
-          PostId={post.id}
-        />
-        <PostOptions 
-          postId={post.id} 
-          authorId={post.authorId} 
-          currentUserId={user.id}
-          title={post.title}
-          content={post.content}
-        />
+        <div className="flex items-center space-x-4 mt-2">
+          <FavoriteButton 
+            PostId={post.id}
+          />
+          <PostOptions 
+            postId={post.id} 
+            authorId={post.authorId} 
+            currentUserId={user.id}
+            title={post.title}
+            content={post.content}
+          />
+        </div>
       </article>
 
       <ReplyList replies={post.replies} postId={post.id} userId={user.id} />

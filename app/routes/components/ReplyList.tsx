@@ -34,11 +34,13 @@ export default function ReplyList({
             <h3 className="text-lg font-semibold">{reply.title}</h3>
             <p className="text-gray-700">{reply.content}</p>
             <p className="text-gray-500">投稿者: {reply.author?.name || '不明'}</p>
-            <FavoriteButton PostId={reply.id} />
-            {/* 現在のユーザーとリプライの著者が一致する場合に削除ボタンを表示 */}
-            {reply.authorId === userId && (
-              <DeleteButton postId={reply.id} redirectTo={`/posts/${postId}`} />
-            )}
+            <div className="flex items-center space-x-4 mt-2">
+              <FavoriteButton PostId={reply.id} />
+              {/* 現在のユーザーとリプライの著者が一致する場合に削除ボタンを表示 */}
+              {reply.authorId === userId && (
+                <DeleteButton postId={reply.id} redirectTo={`/posts/${postId}`} />
+              )}
+            </div>
           </li>
         ))}
       </ul>
