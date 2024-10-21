@@ -2,7 +2,7 @@
 import { useSyncExternalStore } from 'react';
 import type { LoaderFunction, ActionFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
-import { Link, useLoaderData } from '@remix-run/react';
+import { useLoaderData } from '@remix-run/react';
 import { postRepository } from '~/models/post.server';
 
 import { requireAuthenticatedUser } from '~/services/auth.server';
@@ -48,16 +48,6 @@ export const action: ActionFunction = async ({ request, params }) => {
 
 export default function PostShow() {
   const { post, user } = useLoaderData<typeof loader>();
-
-  // クライアント側でISO形式の日付をローカル形式に変換
-  // const formattedDate = new Date(post.createdAt).toLocaleString();
-
-  // useSyncExternalStoreを使用してSSRとクライアント間の不一致を解消
-  const now = useSyncExternalStore(
-    () => () => {},
-    () => new Date(post.createdAt).toLocaleString(), // クライアント側の値
-    () => '~' // SSR用の仮の値
-  );
 
   return (
     <div className="container mx-auto p-6 max-w-3xl">

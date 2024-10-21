@@ -17,7 +17,7 @@ const DeleteButton: React.FC<DeleteButtonProps> = ({ postId, redirectTo }) => {
     return (
         <Form action={`/resources/delete`} method="post" navigate={false}>
             <input type="hidden" name="postId" value={postId} />
-            <input type="hidden" name="redirectTo" value={redirectTo || `/posts/${postId}`} />
+            <input type="hidden" name="redirectTo" value={redirectTo || `/posts`} />
             <button
                 type="submit"
                 onClick={handleDelete}

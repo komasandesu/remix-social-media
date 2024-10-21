@@ -16,10 +16,10 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
   try {
     await postRepository.delete({ id: parseInt(postId, 10), userId: user.id });
-    return redirect(redirectTo || `/posts`);
+    return redirect(redirectTo || `/posts/`);
   } catch (error) {
     console.error("Error deleting post:", error);
     // エラーメッセージを返す
-    return redirect(redirectTo || `/posts`);
+    return redirect(redirectTo || `/posts/`);
   }
 };
