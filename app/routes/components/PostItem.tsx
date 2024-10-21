@@ -1,7 +1,6 @@
 // app/routes/components/PostItem.tsx
 import { Link } from 'react-router-dom';
 import FavoriteButton from './FavoriteButton';
-import DeleteButton from './PostDeleteButton';
 import { User } from '.prisma/client';
 import PostOptions from './PostOptions';
 import { useSyncExternalStore } from 'react';

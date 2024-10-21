@@ -42,16 +42,29 @@ class PostRepository {
     if (post.authorId !== params.userId) {
       throw new Error('You are not authorized to delete this post');
     }
-    await prisma.post.deleteMany({
+    // 2. 返信に付いているお気に入りを先に削除
+    const childPosts = await prisma.post.findMany({
       where: { parentId: params.id },
     });
+    for (const childPost of childPosts) {
+      await prisma.favorite.deleteMany({
+        where: { PostId: childPost.id },
+      });
+    }
+    // 3. 元の投稿に付いているお気に入りを削除
     await prisma.favorite.deleteMany({
       where: { PostId: params.id },
     });
+    // 4. 返信（子投稿）を削除
+    await prisma.post.deleteMany({
+      where: { parentId: params.id },
+    });
+    // 5. 元の投稿を削除
     return prisma.post.delete({
       where: { id: params.id },
     });
   }
+  
   
   async update(params: { id: number, title: string, content: string, userId: string }) {
     const { id, title, content, userId } = params;

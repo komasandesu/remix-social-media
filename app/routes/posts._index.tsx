@@ -7,23 +7,24 @@ import { Link, useLoaderData } from '@remix-run/react';
 import { postRepository } from '../models/post.server';
 
 import FavoriteButton from '~/routes/components/FavoriteButton';
-import { requireAuthenticatedUser } from '~/services/auth.server';
+// import { requireAuthenticatedUser } from '~/services/auth.server';
 
 
 export const loader: LoaderFunction = async ({ request }) => {
   // 投稿データを取得する
-  const user = await requireAuthenticatedUser(request);
+  // const user = await requireAuthenticatedUser(request);
 
   const Posts = await postRepository.findAllWithoutReplies();
+  return json({ posts: Posts });
 
-  return json({ posts: Posts, user: user });
+  // return json({ posts: Posts, user: user });
 };
 
 type PostType = SerializeFrom<Post>;
 
 export default function PostIndex() {
-  // const { posts } = useLoaderData<{ posts: PostType[] }>();
-  const { posts, user } = useLoaderData<{ posts: PostType[]; user: { name: string } | null }>();
+  const { posts } = useLoaderData<{ posts: PostType[] }>();
+  // const { posts, user } = useLoaderData<{ posts: PostType[]; user: { name: string } | null }>();
   
   return (
     <div className="container mx-auto p-4">

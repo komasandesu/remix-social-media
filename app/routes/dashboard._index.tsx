@@ -4,11 +4,6 @@ import { authenticator } from "~/services/auth.server";
 import { prisma } from "../models/db.server"; // Prismaのインポート
 import { Form, Link, useLoaderData, useActionData  } from '@remix-run/react';
 
-interface ActionData {
-  success?: string;
-  error?: string;
-}
-
 export async function loader({ request }: LoaderFunctionArgs) {
   let user = await authenticator.isAuthenticated(request, {
     failureRedirect: "/login",
@@ -23,8 +18,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 export default function Dashboard() {
   const user = useLoaderData<typeof loader>();
-  const actionData = useActionData<ActionData>();
-
 
   return (
     <div className="container mx-auto p-6 max-w-3xl">
