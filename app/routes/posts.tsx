@@ -16,7 +16,7 @@ export default function Posts() {
   const { user } = useLoaderData<{ user: { name: string | null } | null }>();
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="container mx-auto p-4 mt-16">
       <Header path="posts" title="ホーム" username={user?.name || null} /> {/* ここを修正 */}
       <Outlet />
     </div>
