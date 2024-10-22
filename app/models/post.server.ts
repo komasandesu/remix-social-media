@@ -6,6 +6,9 @@ import { Post } from '.prisma/client';
 const prisma = new PrismaClient();
 
 class PostRepository {
+  isFavorite(arg0: { PostId: number; userId: string; }) {
+    throw new Error('Method not implemented.');
+  }
   async find(params: { id: number }) {
     const post = await prisma.post.findUnique({ where: { id: params.id } });
     if (!post) {
@@ -136,6 +139,22 @@ class PostRepository {
       throw new Error(`Post with id ${postId} not found`);
     }
     return post;
+  }
+
+
+  async findInfiniteScrollWithoutReplies(page: number, limit: number) {
+    const skip = (page - 1) * limit;
+    const posts = await prisma.post.findMany({
+      where: {
+        parentId: null, // 親投稿のみを取得
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      skip, // ページに応じてスキップする投稿数
+      take: limit, // 取得する投稿数
+    });
+    return posts;
   }
 
   // 指定されたユーザーIDの投稿を取得するメソッド
