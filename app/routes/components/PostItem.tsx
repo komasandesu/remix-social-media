@@ -8,12 +8,12 @@ import { useSyncExternalStore } from 'react';
 // 型定義
 type PostItemProps = {
   id: number;
-  parentId: number;
+  parentId: number | null;
   title: string;
   content: string;
   createdAt: string;
   authorId: string;
-  author: User;
+  authorName: string;
   userId: string; // 現在のユーザーID
   postId?: number; // （オプション）親投稿ID（リプライの場合）
 };
@@ -25,7 +25,7 @@ export default function PostItem({
     content,
     createdAt,
     authorId,
-    author,
+    authorName,
     userId,
 }: PostItemProps) {
     // const formattedDate = new Date(createdAt).toLocaleString();
@@ -41,8 +41,8 @@ export default function PostItem({
             <p className="text-gray-700 mb-4">{content}</p>
             <p className="text-gray-500">
                 投稿者: 
-                <Link to={`/profile/${author?.name}`} className="text-blue-600 hover:underline ml-1">
-                {author?.name || '不明'}
+                <Link to={`/profile/${authorName}`} className="text-blue-600 hover:underline ml-1">
+                {authorName || '不明'}
                 </Link>
             </p>
             <p className="text-gray-500">投稿日時: {formattedDate}</p>

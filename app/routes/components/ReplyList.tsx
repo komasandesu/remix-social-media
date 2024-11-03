@@ -39,7 +39,7 @@ export default function ReplyList({
             content={reply.content}
             createdAt={reply.createdAt}
             authorId={reply.authorId}
-            author={reply.author}
+            authorName={reply.author.name}
             userId={userId}
             postId={postId} // 親投稿IDを渡す
           />

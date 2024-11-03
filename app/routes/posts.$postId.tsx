@@ -60,7 +60,7 @@ export default function PostShow() {
         content={post.content}
         createdAt={post.createdAt}
         authorId={post.authorId}
-        author={post.author}
+        authorName={post.author.name}
         userId={user.id}
       />
       </article>

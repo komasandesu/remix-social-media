@@ -61,11 +61,11 @@ export default function PostIndex() {
   useEffect(() => {
     const observer = new IntersectionObserver((entries) => {
       const entry = entries[0];
-      if (entry.isIntersecting && hasNextPage && entry.intersectionRatio > 0.1) {
+      if (entry.isIntersecting && hasNextPage && entry.intersectionRatio > 0.95) {
         loadMorePosts();
       }
     }, {
-      threshold: 0.1,
+      threshold: 0.95,
     });
 
     if (observerRef.current) {
