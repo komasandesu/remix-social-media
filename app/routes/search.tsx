@@ -1,4 +1,4 @@
-// app/routes/profile.tsx
+// app/routes/search.tsx
 import { Outlet } from "@remix-run/react";
 import { json, LoaderFunction } from '@remix-run/node';
 import { useLoaderData } from '@remix-run/react';
@@ -12,12 +12,12 @@ export const loader: LoaderFunction = async ({ request }) => {
   return json({ posts: Posts, user: user });
 };
 
-export default function Profile() {
+export default function Dashboard() {
   const { user } = useLoaderData<{ user: { name: string | null } | null }>();
 
   return (
     <div className="container mx-auto p-4 mt-16">
-      <Header path="posts" title="ホーム" username={user?.name || null} /> {/* ここを修正 */}
+      <Header path="posts" title="ホーム" username={user?.name || null} />
       <Outlet />
     </div>
   );
