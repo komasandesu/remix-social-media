@@ -187,6 +187,7 @@ class PostRepository {
     return posts;
   }
 
+  //プロフィール用
   async countByUserId(userId: string) {
     return prisma.post.count({
       where: {
@@ -209,6 +210,7 @@ class PostRepository {
     });
   }
 
+  //お気に入り用
   async countFavoritesByUserId(userId: string) {
     return prisma.favorite.count({
       where: { userId },
@@ -221,6 +223,34 @@ class PostRepository {
       include: { post: true },
       skip,
       take,
+    });
+  }
+
+  //検索用
+  async searchPosts(query: string, skip: number, take: number) {
+    return prisma.post.findMany({
+      where: {
+        OR: [
+          { title: { contains: query, mode: 'insensitive' } },
+          { content: { contains: query, mode: 'insensitive' } },
+        ],
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      skip,
+      take,
+    });
+  }
+  
+  async countSearchPosts(query: string) {
+    return prisma.post.count({
+      where: {
+        OR: [
+          { title: { contains: query, mode: 'insensitive' } },
+          { content: { contains: query, mode: 'insensitive' } },
+        ],
+      },
     });
   }
 

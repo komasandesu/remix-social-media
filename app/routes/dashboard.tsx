@@ -1,4 +1,4 @@
-// app/routes/posts.tsx
+// app/routes/dashboard.tsx
 import { Outlet } from "@remix-run/react";
 import { json, LoaderFunction } from '@remix-run/node';
 import { useLoaderData } from '@remix-run/react';
