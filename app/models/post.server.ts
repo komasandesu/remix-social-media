@@ -6,6 +6,7 @@ import { Post } from '.prisma/client';
 const prisma = new PrismaClient();
 
 class PostRepository {
+
   isFavorite(arg0: { PostId: number; userId: string; }) {
     throw new Error('Method not implemented.');
   }
@@ -29,6 +30,35 @@ class PostRepository {
         title,
         content,
         authorId, // authorIdをdataに追加
+      },
+    });
+  }
+
+  // リプライの作成
+  async createReply(params: { title: string; content: string; authorId: string; parentId: number }) {
+    const { title, content, authorId, parentId } = params;
+    
+    if (!title || !content) throw new Error('Title and content are required');
+    
+    // 親投稿の存在確認
+    const parentPost = await prisma.post.findUnique({
+      where: { id: parentId },
+    });
+
+    if (!parentPost) throw new Error('Parent post does not exist');
+
+    // 親投稿がリプライでないことを確認（リプライの場合はparentIdが存在する）
+    if (parentPost.parentId) {
+      throw new Error('Replies to replies are not allowed');
+    }
+
+
+    return prisma.post.create({
+      data: {
+        title,
+        content,
+        authorId,
+        parentId, // 親投稿のIDを設定
       },
     });
   }
@@ -157,47 +187,40 @@ class PostRepository {
     return posts;
   }
 
-  // 指定されたユーザーIDの投稿を取得するメソッド
-  async findByUserId(userId: string) {
-    return prisma.post.findMany({
+  async countByUserId(userId: string) {
+    return prisma.post.count({
       where: {
         authorId: userId,
-        parentId: null, // 親投稿のみを取得
-      },
-      orderBy: {
-        createdAt: 'desc', // 作成日で新しい順に並べる
+        parentId: null, // 親投稿のみをカウント
       },
     });
   }
-  
-  
-
-  // リプライの作成
-  async createReply(params: { title: string; content: string; authorId: string; parentId: number }) {
-    const { title, content, authorId, parentId } = params;
-    
-    if (!title || !content) throw new Error('Title and content are required');
-    
-    // 親投稿の存在確認
-    const parentPost = await prisma.post.findUnique({
-      where: { id: parentId },
+  async findByUserId(userId: string, skip: number, take: number) {
+      return prisma.post.findMany({
+        where: {
+          authorId: userId,
+          parentId: null,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+        skip,
+        take,
     });
+  }
 
-    if (!parentPost) throw new Error('Parent post does not exist');
-
-    // 親投稿がリプライでないことを確認（リプライの場合はparentIdが存在する）
-    if (parentPost.parentId) {
-      throw new Error('Replies to replies are not allowed');
-    }
-
-
-    return prisma.post.create({
-      data: {
-        title,
-        content,
-        authorId,
-        parentId, // 親投稿のIDを設定
-      },
+  async countFavoritesByUserId(userId: string) {
+    return prisma.favorite.count({
+      where: { userId },
+    });
+  }
+  
+  async findFavoritesByUserId(userId: string, skip: number, take: number) {
+    return prisma.favorite.findMany({
+      where: { userId },
+      include: { post: true },
+      skip,
+      take,
     });
   }
 

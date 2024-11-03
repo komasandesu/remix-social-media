@@ -1,9 +1,10 @@
 // app/routes/dashboard.profile-settings.tsx
-import { ActionFunctionArgs } from "@remix-run/node";
+import { ActionFunctionArgs, redirect } from "@remix-run/node";
 import { authenticator } from "~/services/auth.server";
 import { prisma } from "../models/db.server";
 import bcrypt from 'bcrypt';
 import { Form, Link, useActionData } from '@remix-run/react';
+import { commitSession, getSession } from "~/services/session.server";
 
 interface ActionData {
   success?: string;
@@ -60,6 +61,12 @@ export async function action({ request }: ActionFunctionArgs) {
     },
   });
 
+  // ユーザー名がアルファベットと数字のみに限定されているかを確認する
+  const alphaNumericRegex = /^[a-zA-Z0-9]+$/;
+  if (!alphaNumericRegex.test(name)) {
+      return { error: "ユーザー名はアルファベットと数字のみ使用できます。" };
+  }
+
   if (existingUser) {
     if (existingUser.name === updateData.name) {
       return { error: "この名前は既に登録されています。" };
@@ -75,7 +82,14 @@ export async function action({ request }: ActionFunctionArgs) {
     data: updateData,
   });
 
-  return { success: "プロフィールが正常に更新されました。" };
+  // セッションを更新
+  const session = await getSession(request.headers.get("Cookie"));
+  session.set(authenticator.sessionKey, { ...user, name: updateData.name });
+
+  // プロフィール更新後に新しいユーザー名を使ってリダイレクト
+  return redirect(`/profile/${updateData.name}`, {
+    headers: { "Set-Cookie": await commitSession(session) },
+  });
 }
 
 export default function Profile() {
@@ -123,7 +137,6 @@ export default function Profile() {
           プロフィールを更新する
         </button>
       </Form>
-      <Link to="/dashboard" className="mt-4 text-blue-500 hover:underline">ダッシュボードに戻る</Link>
     </div>
   );
 }

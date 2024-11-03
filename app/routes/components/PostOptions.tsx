@@ -6,7 +6,7 @@ import DeleteButton from './PostDeleteButton';
 
 interface PostOptionsProps {
     postId: number;
-    parentId: number;
+    parentId: number | null;
     authorId: string; // 投稿者のID
     currentUserId: string; // 現在のユーザーのID
     title?: string;    // タイトルを追加
