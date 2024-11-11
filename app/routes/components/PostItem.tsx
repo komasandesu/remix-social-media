@@ -37,8 +37,18 @@ export default function PostItem({
 
     return (
         <div className="mb-6 border border-gray-300 rounded-lg shadow-md p-4 bg-white">
-            <h1 className="text-2xl font-bold mb-2 text-black">{title}</h1>
-            <p className="text-gray-700 mb-4">{content}</p>
+            <h1
+                className="text-2xl font-bold mb-2 text-black break-words"
+                style={{ wordBreak: 'break-word', whiteSpace: 'normal' }}
+            >
+                {title}
+            </h1>
+            <p
+                className="text-gray-700 mb-4 break-words"
+                style={{ wordBreak: 'break-word', whiteSpace: 'pre-wrap' }}
+            >
+                {content}
+            </p>
             <p className="text-gray-500">
                 投稿者: 
                 <Link to={`/profile/${authorName}`} className="text-blue-600 hover:underline ml-1">
