@@ -27,9 +27,16 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
 
     return (
         <div className="bg-white shadow-lg rounded-lg p-6">
-            <Link 
-                to={`/posts/${post.id}`} 
-                className="block text-xl font-semibold text-blue-600 hover:underline mb-2"
+            <Link
+                to={`/posts/${post.id}`}
+                className="block text-xl font-semibold text-blue-600 hover:underline mb-2 truncate"
+                style={{
+                display: 'block',
+                overflow: 'hidden',
+                whiteSpace: 'nowrap',
+                textOverflow: 'ellipsis',
+                maxWidth: '100%', // 必要に応じて調整可能
+                }}
             >
                 {post.title}
             </Link>
