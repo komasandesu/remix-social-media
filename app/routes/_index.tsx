@@ -3,6 +3,7 @@ import { Link, useLoaderData } from '@remix-run/react';
 import type { MetaFunction, LoaderFunction } from '@remix-run/node';
 import { prisma } from '~/models/db.server';
 import { json } from '@remix-run/node';
+import { useSyncExternalStore } from 'react';
 
 export const meta: MetaFunction = () => {
   return [
@@ -36,29 +37,37 @@ export default function Index() {
         <div className="w-2/5 p-3 bg-white rounded-lg shadow-md">
           <h2 className="text-xl font-semibold mb-3 border-b border-gray-300 pb-2 text-black">最新の投稿</h2>
           <div className="space-y-2">
-            {posts.map((post) => (
-              <div
-                key={post.id}
-                className="p-2 bg-gray-100 rounded-md hover:bg-gray-200 transition duration-200 text-sm"
-              >
-                <Link
-                  to={`/posts/${post.id}`}
-                  className="text-blue-500 hover:underline text-base block truncate"
-                  style={{
-                    display: "block",
-                    overflow: "hidden",
-                    whiteSpace: "nowrap",
-                    textOverflow: "ellipsis",
-                    maxWidth: "100%", // 必要に応じて幅を調整
-                  }}
+            {posts.map((post) => {
+              const formattedDate = useSyncExternalStore(
+                () => () => {},
+                () => new Date(post.createdAt).toLocaleString(), // クライアント側の値
+                () => '~' // SSR用の仮の値
+              );
+
+              return (
+                <div
+                  key={post.id}
+                  className="p-2 bg-gray-100 rounded-md hover:bg-gray-200 transition duration-200 text-sm"
                 >
-                  {post.title}
-                </Link>
-                <p className="text-gray-500 text-xs">
-                  {new Date(post.createdAt).toLocaleDateString()}
-                </p>
-              </div>
-            ))}
+                  <Link
+                    to={`/posts/${post.id}`}
+                    className="text-blue-500 hover:underline text-base block truncate"
+                    style={{
+                      display: "block",
+                      overflow: "hidden",
+                      whiteSpace: "nowrap",
+                      textOverflow: "ellipsis",
+                      maxWidth: "100%", // 必要に応じて幅を調整
+                    }}
+                  >
+                    {post.title}
+                  </Link>
+                  <p className="text-gray-500 text-xs">
+                    {formattedDate}
+                  </p>
+                </div>
+              );
+            })}
           </div>
         </div>
 

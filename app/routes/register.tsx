@@ -92,6 +92,13 @@ export default function Register() {
                     >
                         登録する
                     </button>
+                    <div className="mt-4 text-center text-black">
+                        <p>
+                            ログインは
+                            <a href="/login" className="text-blue-600 hover:underline">こちら</a>
+                            からどうぞ。
+                        </p>
+                    </div>
                 </Form>
             </div>
         </div>

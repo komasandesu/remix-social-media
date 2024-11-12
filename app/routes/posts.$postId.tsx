@@ -14,11 +14,19 @@ import PostItem from './components/PostItem';
 export const loader: LoaderFunction = async ({ request, params }) => {
   const user = await requireAuthenticatedUser(request); // ユーザー情報を取得
   const postId = params.postId ? parseInt(params.postId, 10) : null;
+
   if (!postId) {
     throw new Response("Not Found", { status: 404 });
   }
+
   try {
     const post = await postRepository.findPostWithAuthorAndReplies(postId);
+
+    // 投稿が返信である場合は親ポストにリダイレクト
+    if (post.parentId) {
+      return redirect(`/posts/${post.parentId}`);
+    }
+
     return json({ post, user }); // 投稿とユーザー情報を返す
   } catch (error) {
     throw new Response("Post Not Found", { status: 404 });
