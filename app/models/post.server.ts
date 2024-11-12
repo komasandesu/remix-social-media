@@ -220,6 +220,9 @@ class PostRepository {
   async findFavoritesByUserId(userId: string, skip: number, take: number) {
     return prisma.favorite.findMany({
       where: { userId },
+      orderBy: {
+        createdAt: "desc",
+      },
       include: { post: true },
       skip,
       take,
