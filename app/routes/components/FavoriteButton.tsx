@@ -1,6 +1,7 @@
 // app/routes/components/FavoriteButton.tsx
 import React, { useState, useEffect } from 'react';
 import { useFetcher } from '@remix-run/react';
+import styles from './FavoriteButton.module.css';
 
 interface FavoriteButtonProps {
   PostId: number;
@@ -55,17 +56,17 @@ const FavoriteButton: React.FC<FavoriteButtonProps> = ({ PostId }) => {
   return (
     <button
       onClick={handleFavoriteClick}
-      className={`flex items-center space-x-2 p-2 rounded-full ${
-        isFavorite ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-600'
-      }`}
+      className={`${styles.button} ${isFavorite ? styles.favorite : ''}`}
       disabled={fetcher.state === 'submitting'}
     >
-      <span className="text-lg">
-        {isFavorite ? '★' : '☆'}
-      </span>
-      <span className="text-sm">
-        {favoriteCount}
-      </span>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        className={styles.star}
+      >
+        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.27 5.82 21 7 14.14 2 9.27l6.91-1.01L12 2z" />
+      </svg>
+      <span className="text-sm">{favoriteCount}</span>
     </button>
   );
 };
