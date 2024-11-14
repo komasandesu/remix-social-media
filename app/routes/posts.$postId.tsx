@@ -1,5 +1,4 @@
 // app/routes/posts.$postId.tsx
-import { useSyncExternalStore } from 'react';
 import type { LoaderFunction, ActionFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
 import { useLoaderData } from '@remix-run/react';
@@ -28,15 +27,42 @@ export const loader: LoaderFunction = async ({ request, params }) => {
       return redirect(`/posts/${post.parentId}`);
     }
 
+    // 投稿の createdAt を成形
+    const formattedPostDate = new Date(post.createdAt).toLocaleString("ja-JP", {
+      timeZone: "Asia/Tokyo",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: false,
+    });
+
     // 投稿のメインアイテムのお気に入り情報を取得
     const isFavorite = await favoriteRepository.isFavorite({ PostId: postId, userId: user.id });
     const favoriteCount = await favoriteRepository.countFavorites(postId);
 
-    // 各リプライに対するお気に入り情報を取得
-    const repliesWithFavoriteInfo = await favoriteRepository.postsWithFavoriteData(post.replies, user.id);
+    // posts にお気に入りデータを追加し、createdAt を JST で成形
+    const repliesWithFavoriteInfo = (await favoriteRepository.postsWithFavoriteData(post.replies, user.id)).map(post => ({
+      ...post,
+      createdAt: new Date(post.createdAt).toLocaleString("ja-JP", {
+        timeZone: "Asia/Tokyo",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+      }),
+    }));
 
     return json({
-      post: { ...post, replies: repliesWithFavoriteInfo },
+      post: { 
+        ...post, 
+        createdAt: formattedPostDate,
+        replies: repliesWithFavoriteInfo },
       user,
       initialIsFavorite: isFavorite,
       initialFavoriteCount: favoriteCount,

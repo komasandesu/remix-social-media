@@ -19,8 +19,7 @@ const PostForm: React.FC = () => {
             className="mb-4"
             onSubmit={handleSubmit}
         >
-            <input
-                type="text"
+            <textarea
                 name="title"
                 required
                 className="w-full border rounded p-2"

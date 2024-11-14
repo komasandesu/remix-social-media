@@ -24,8 +24,20 @@ export const loader: LoaderFunction = async ({ request }) => {
     return { error: "ユーザーが認証されていません。" };
   }
 
-  // posts にお気に入りデータを追加
-  const postsWithFavoriteData = await favoriteRepository.postsWithFavoriteData(posts, user.id);
+  // posts にお気に入りデータを追加し、createdAt を JST で成形
+  const postsWithFavoriteData = (await favoriteRepository.postsWithFavoriteData(posts, user.id)).map(post => ({
+    ...post,
+    createdAt: new Date(post.createdAt).toLocaleString("ja-JP", {
+      timeZone: "Asia/Tokyo",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: false,
+    }),
+  }));
 
   const hasNextPage = posts.length === limit;
   return json({ posts: postsWithFavoriteData, hasNextPage });
@@ -96,11 +108,11 @@ export default function PostIndex() {
         {posts.map(post => (
           <PostCard 
             key={post.id} 
-            post={{ 
-              ...post, 
-              createdAt: new Date(post.createdAt), 
-              updatedAt: new Date(post.updatedAt) 
-            }} 
+            id={post.id}
+            parentId={post.parentId}
+            title={post.title}
+            content={post.content}
+            createdAt={post.createdAt}
             initialIsFavorite={post.initialIsFavorite} // 初期のお気に入り状態
             initialFavoriteCount={post.initialFavoriteCount} // 初期のお気に入り数
           />
