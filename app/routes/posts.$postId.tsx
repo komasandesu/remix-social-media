@@ -10,6 +10,7 @@ import { requireAuthenticatedUser } from '~/services/auth.server';
 import ReplyForm from './components/ReplyForm';
 import ReplyList from './components/ReplyList';
 import PostItem from './components/PostItem';
+import { favoriteRepository } from '~/models/favorite.server';
 
 export const loader: LoaderFunction = async ({ request, params }) => {
   const user = await requireAuthenticatedUser(request); // ユーザー情報を取得
@@ -27,7 +28,19 @@ export const loader: LoaderFunction = async ({ request, params }) => {
       return redirect(`/posts/${post.parentId}`);
     }
 
-    return json({ post, user }); // 投稿とユーザー情報を返す
+    // 投稿のメインアイテムのお気に入り情報を取得
+    const isFavorite = await favoriteRepository.isFavorite({ PostId: postId, userId: user.id });
+    const favoriteCount = await favoriteRepository.countFavorites(postId);
+
+    // 各リプライに対するお気に入り情報を取得
+    const repliesWithFavoriteInfo = await favoriteRepository.postsWithFavoriteData(post.replies, user.id);
+
+    return json({
+      post: { ...post, replies: repliesWithFavoriteInfo },
+      user,
+      initialIsFavorite: isFavorite,
+      initialFavoriteCount: favoriteCount,
+    });
   } catch (error) {
     throw new Response("Post Not Found", { status: 404 });
   }
@@ -55,7 +68,7 @@ export const action: ActionFunction = async ({ request, params }) => {
 
 
 export default function PostShow() {
-  const { post, user } = useLoaderData<typeof loader>();
+  const { post, user, initialIsFavorite, initialFavoriteCount } = useLoaderData<typeof loader>();
 
   return (
     <div className="container mx-auto p-6 max-w-3xl">
@@ -70,6 +83,8 @@ export default function PostShow() {
         authorId={post.authorId}
         authorName={post.author.name}
         userId={user.id}
+        initialIsFavorite={initialIsFavorite} // 初期のお気に入り状態
+        initialFavoriteCount={initialFavoriteCount} // 初期のお気に入り数
       />
       </article>
 

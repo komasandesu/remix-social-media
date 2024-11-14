@@ -6,6 +6,7 @@ import { json } from "@remix-run/node";
 import { requireAuthenticatedUser } from "~/services/auth.server";
 import PostCard from "./components/PostCard";
 import { postRepository } from "~/models/post.server"; // 追加
+import { favoriteRepository } from "~/models/favorite.server";
 
 const POSTS_PER_PAGE = 10; // 1ページに表示する投稿数
 const FAVORITES_PER_PAGE = 10; // お気に入りの投稿数
@@ -35,7 +36,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     FAVORITES_PER_PAGE
   );
 
-  return json({ user, profileUser, favorites, page, totalPages });
+  // favorites にお気に入りデータを追加
+  const postsWithFavoriteData = await favoriteRepository.postsWithFavoriteData(favorites.map(f => f.post), user.id);
+
+  return json({ user, profileUser, favorites: postsWithFavoriteData, page, totalPages });
 }
 
 
@@ -51,11 +55,14 @@ export default function UserFavorites() {
           {favorites.length > 0 ? (
             favorites.map((favorite) => (
               <li key={favorite.id}>
-                <PostCard post={{ 
-                    ...favorite.post, 
-                    createdAt: new Date(favorite.post.createdAt), 
-                    updatedAt: new Date(favorite.post.updatedAt) 
-                    }} 
+                <PostCard 
+                  post={{
+                    ...favorite,
+                    createdAt: new Date(favorite.createdAt),
+                    updatedAt: new Date(favorite.updatedAt)
+                  }} 
+                  initialIsFavorite={favorite.initialIsFavorite}
+                  initialFavoriteCount={favorite.initialFavoriteCount}
                 />
               </li>
             ))
