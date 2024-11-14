@@ -6,9 +6,11 @@ import { useSyncExternalStore } from "react";
 
 type PostCardProps = {
   post: Post;
+  initialIsFavorite: boolean; // 初期のお気に入り状態
+  initialFavoriteCount: number; // 初期のお気に入り数
 };
 
-const PostCard: React.FC<PostCardProps> = ({ post }) => {
+const PostCard: React.FC<PostCardProps> = ({ post, initialIsFavorite, initialFavoriteCount }) => {
     const formattedCreatedDate = useSyncExternalStore(
         () => () => {},
         () => {
@@ -47,7 +49,12 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
                 {post.content} {/* 投稿の内容の一部を表示 */}
             </p>
             <div className="flex justify-between items-center">
-                <FavoriteButton PostId={post.id} />
+                {/* FavoriteButton に初期データを渡す */}
+                <FavoriteButton 
+                    PostId={post.id}
+                    initialIsFavorite={initialIsFavorite}
+                    initialFavoriteCount={initialFavoriteCount}
+                />
             </div>
         </div>
     );

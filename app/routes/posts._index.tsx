@@ -9,6 +9,8 @@ import { postRepository } from '../models/post.server';
 import PostCard from './components/PostCard';
 import PostForm from './components/PostForm';
 import { useEffect, useRef, useState } from 'react';
+import { favoriteRepository } from '~/models/favorite.server';
+import { authenticator } from '~/services/auth.server';
 
 
 export const loader: LoaderFunction = async ({ request }) => {
@@ -17,15 +19,23 @@ export const loader: LoaderFunction = async ({ request }) => {
   const limit = 20;
 
   const posts = await postRepository.findInfiniteScrollWithoutReplies(page, limit);
-  
-  // 次のページが存在するかを判定
-  const hasNextPage = posts.length === limit;
+  const user = await authenticator.isAuthenticated(request);
+  if (!user) {
+    return { error: "ユーザーが認証されていません。" };
+  }
 
-  return json({ posts, hasNextPage });
+  // posts にお気に入りデータを追加
+  const postsWithFavoriteData = await favoriteRepository.postsWithFavoriteData(posts, user.id);
+
+  const hasNextPage = posts.length === limit;
+  return json({ posts: postsWithFavoriteData, hasNextPage });
 };
 
 
-type PostType = SerializeFrom<Post>;
+type PostType = SerializeFrom<Post> & {
+  initialIsFavorite: boolean;
+  initialFavoriteCount: number;
+};
 
 export default function PostIndex() {
   const { posts: initialPosts, hasNextPage: initialHasNextPage } = useLoaderData<{ posts: PostType[], hasNextPage: boolean }>();
@@ -91,6 +101,8 @@ export default function PostIndex() {
               createdAt: new Date(post.createdAt), 
               updatedAt: new Date(post.updatedAt) 
             }} 
+            initialIsFavorite={post.initialIsFavorite} // 初期のお気に入り状態
+            initialFavoriteCount={post.initialFavoriteCount} // 初期のお気に入り数
           />
         ))}
       </div>

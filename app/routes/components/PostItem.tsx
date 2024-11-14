@@ -15,7 +15,8 @@ type PostItemProps = {
   authorId: string;
   authorName: string;
   userId: string; // 現在のユーザーID
-  postId?: number; // （オプション）親投稿ID（リプライの場合）
+  initialIsFavorite: boolean; // 初期のお気に入り状態
+  initialFavoriteCount: number; // 初期のお気に入り数
 };
 
 export default function PostItem({
@@ -27,6 +28,8 @@ export default function PostItem({
     authorId,
     authorName,
     userId,
+    initialIsFavorite,
+    initialFavoriteCount
 }: PostItemProps) {
     // const formattedDate = new Date(createdAt).toLocaleString();
     const formattedDate = useSyncExternalStore(
@@ -57,7 +60,11 @@ export default function PostItem({
             </p>
             <p className="text-gray-500">投稿日時: {formattedDate}</p>
             <div className="flex items-center space-x-4 mt-2">
-                <FavoriteButton PostId={id} />
+                <FavoriteButton 
+                    PostId={id}
+                    initialIsFavorite={initialIsFavorite}
+                    initialFavoriteCount={initialFavoriteCount}
+                />
                 <PostOptions 
                     postId={id} 
                     parentId={parentId}

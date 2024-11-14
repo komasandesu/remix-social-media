@@ -7,6 +7,7 @@ import { postRepository } from "~/models/post.server"; // 追加
 import { useSyncExternalStore } from "react";
 import { requireAuthenticatedUser } from "~/services/auth.server";
 import PostCard from "./components/PostCard";
+import { favoriteRepository } from "~/models/favorite.server";
 
 
 const POSTS_PER_PAGE = 10; // 1ページに表示する投稿数
@@ -33,7 +34,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     POSTS_PER_PAGE
   );
 
-  return json({ user, profileUser, posts, page, totalPages });
+  // posts にお気に入りデータを追加
+  const postsWithFavoriteData = await favoriteRepository.postsWithFavoriteData(posts, user.id);
+
+  return json({ user, profileUser, posts:postsWithFavoriteData, page, totalPages });
 }
 
 export default function UserProfile() {
@@ -87,6 +91,8 @@ export default function UserProfile() {
                   createdAt: new Date(post.createdAt),
                   updatedAt: new Date(post.updatedAt),
                 }}
+                initialIsFavorite={post.initialIsFavorite} // 初期のお気に入り状態
+                initialFavoriteCount={post.initialFavoriteCount} // 初期のお気に入り数
               />
             </li>
           ))
