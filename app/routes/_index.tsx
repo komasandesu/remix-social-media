@@ -38,12 +38,6 @@ export default function Index() {
           <h2 className="text-xl font-semibold mb-3 border-b border-gray-300 pb-2 text-black">最新の投稿</h2>
           <div className="space-y-2">
             {posts.map((post) => {
-              const formattedDate = useSyncExternalStore(
-                () => () => {},
-                () => new Date(post.createdAt).toLocaleString(), // クライアント側の値
-                () => '~' // SSR用の仮の値
-              );
-
               return (
                 <div
                   key={post.id}
@@ -63,7 +57,7 @@ export default function Index() {
                     {post.title}
                   </Link>
                   <p className="text-gray-500 text-xs">
-                    {formattedDate}
+                    {post.createdAt}
                   </p>
                 </div>
               );

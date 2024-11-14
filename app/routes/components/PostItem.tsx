@@ -31,12 +31,6 @@ export default function PostItem({
     initialIsFavorite,
     initialFavoriteCount
 }: PostItemProps) {
-    // const formattedDate = new Date(createdAt).toLocaleString();
-    const formattedDate = useSyncExternalStore(
-        () => () => {},
-        () => new Date(createdAt).toLocaleString(), // クライアント側の値
-        () => '~' // SSR用の仮の値
-    );
 
     return (
         <div className="mb-6 border border-gray-300 rounded-lg shadow-md p-4 bg-white">
@@ -58,7 +52,7 @@ export default function PostItem({
                 {authorName || '不明'}
                 </Link>
             </p>
-            <p className="text-gray-500">投稿日時: {formattedDate}</p>
+            <p className="text-gray-500">投稿日時: {createdAt}</p>
             <div className="flex items-center space-x-4 mt-2">
                 <FavoriteButton 
                     PostId={id}

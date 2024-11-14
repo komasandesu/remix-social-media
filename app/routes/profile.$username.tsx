@@ -1,10 +1,9 @@
 // app/routes/profile.$username.tsx
 import { LoaderFunctionArgs } from "@remix-run/node";
 import { prisma } from "~/models/db.server";
-import { useLoaderData, Link, Form, useSearchParams } from '@remix-run/react';
+import { useLoaderData, Link, Form } from '@remix-run/react';
 import { json } from "@remix-run/node";
 import { postRepository } from "~/models/post.server"; // 追加
-import { useSyncExternalStore } from "react";
 import { requireAuthenticatedUser } from "~/services/auth.server";
 import PostCard from "./components/PostCard";
 import { favoriteRepository } from "~/models/favorite.server";
@@ -34,8 +33,20 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     POSTS_PER_PAGE
   );
 
-  // posts にお気に入りデータを追加
-  const postsWithFavoriteData = await favoriteRepository.postsWithFavoriteData(posts, user.id);
+  // posts にお気に入りデータを追加し、createdAt を JST で成形
+  const postsWithFavoriteData = (await favoriteRepository.postsWithFavoriteData(posts, user.id)).map(post => ({
+    ...post,
+    createdAt: new Date(post.createdAt).toLocaleString("ja-JP", {
+      timeZone: "Asia/Tokyo",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: false,
+    }),
+  }));
 
   return json({ user, profileUser, posts:postsWithFavoriteData, page, totalPages });
 }
@@ -43,19 +54,13 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 export default function UserProfile() {
   const { user, profileUser, posts, page, totalPages } = useLoaderData<typeof loader>();
 
-  const formattedDate = useSyncExternalStore(
-    () => () => {},
-    () => new Date(profileUser.createdAt).toLocaleString(),
-    () => "~"
-  );
-
   return (
     <div className="container mx-auto p-6 max-w-3xl">
       <div className="bg-white shadow-md rounded-lg p-6">
         <h1 className="text-2xl font-bold mb-4 text-black">{profileUser.name}さんのプロフィール</h1>
         <div className="space-y-4">
           <p className="text-gray-600">Email: {profileUser.email}</p>
-          <p className="text-gray-600">作成日: {formattedDate}</p>
+          <p className="text-gray-600">作成日: {profileUser.createdAt}</p>
 
           <Link to={`/profile/${profileUser.name}/favorite`} className="text-blue-600 hover:underline ml-4">
             お気に入り一覧
@@ -85,12 +90,13 @@ export default function UserProfile() {
         {posts.length > 0 ? (
           posts.map((post) => (
             <li key={post.id}>
-              <PostCard
-                post={{
-                  ...post,
-                  createdAt: new Date(post.createdAt),
-                  updatedAt: new Date(post.updatedAt),
-                }}
+              <PostCard 
+                key={post.id} 
+                id={post.id}
+                parentId={post.parentId}
+                title={post.title}
+                content={post.content}
+                createdAt={post.createdAt}
                 initialIsFavorite={post.initialIsFavorite} // 初期のお気に入り状態
                 initialFavoriteCount={post.initialFavoriteCount} // 初期のお気に入り数
               />
@@ -104,7 +110,7 @@ export default function UserProfile() {
       {/* ページネーション */}
       <div className="flex justify-center space-x-2 mt-4">
         {/* 最初のページ */}
-        {page > 1 && (
+        {page > 2 && (
           <Link
             to="?page=1"
             className={`px-4 py-2 border rounded ${page === 1 ? 'bg-blue-500 text-white' : 'bg-white text-blue-500'}`}
@@ -117,7 +123,7 @@ export default function UserProfile() {
         {page > 3 && <span className="px-2">…</span>}
 
         {/* 現在のページの前後 */}
-        {page > 2 && (
+        {page > 1 && (
           <Link to={`?page=${page - 1}`} className="px-4 py-2 border rounded bg-white text-blue-500">
             {page - 1}
           </Link>
@@ -133,7 +139,7 @@ export default function UserProfile() {
         )}
 
         {/* 最後のページ */}
-        {totalPages > 1 && page < totalPages - 1 && (
+        {page < totalPages - 1 && (
           <span className="px-2">…</span>
         )}
         {page < totalPages-1 && (

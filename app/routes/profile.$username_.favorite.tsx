@@ -8,7 +8,6 @@ import PostCard from "./components/PostCard";
 import { postRepository } from "~/models/post.server"; // 追加
 import { favoriteRepository } from "~/models/favorite.server";
 
-const POSTS_PER_PAGE = 10; // 1ページに表示する投稿数
 const FAVORITES_PER_PAGE = 10; // お気に入りの投稿数
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
@@ -36,8 +35,20 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     FAVORITES_PER_PAGE
   );
 
-  // favorites にお気に入りデータを追加
-  const postsWithFavoriteData = await favoriteRepository.postsWithFavoriteData(favorites.map(f => f.post), user.id);
+  // favorites にお気に入りデータを追加し、createdAt を JST で成形
+  const postsWithFavoriteData = (await favoriteRepository.postsWithFavoriteData(favorites.map(f => f.post), user.id)).map(post => ({
+    ...post,
+    createdAt: new Date(post.createdAt).toLocaleString("ja-JP", {
+      timeZone: "Asia/Tokyo",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: false,
+    }),
+  }));
 
   return json({ user, profileUser, favorites: postsWithFavoriteData, page, totalPages });
 }
@@ -56,13 +67,14 @@ export default function UserFavorites() {
             favorites.map((favorite) => (
               <li key={favorite.id}>
                 <PostCard 
-                  post={{
-                    ...favorite,
-                    createdAt: new Date(favorite.createdAt),
-                    updatedAt: new Date(favorite.updatedAt)
-                  }} 
-                  initialIsFavorite={favorite.initialIsFavorite}
-                  initialFavoriteCount={favorite.initialFavoriteCount}
+                  key={favorite.id} 
+                  id={favorite.id}
+                  parentId={favorite.parentId}
+                  title={favorite.title}
+                  content={favorite.content}
+                  createdAt={favorite.createdAt}
+                  initialIsFavorite={favorite.initialIsFavorite} // 初期のお気に入り状態
+                  initialFavoriteCount={favorite.initialFavoriteCount} // 初期のお気に入り数
                 />
               </li>
             ))
@@ -75,7 +87,7 @@ export default function UserFavorites() {
       {/* ページネーション */}
       <div className="flex justify-center space-x-2 mt-4">
         {/* 最初のページ */}
-        {page > 1 && (
+        {page > 2 && (
           <Link
             to="?page=1"
             className={`px-4 py-2 border rounded ${page === 1 ? 'bg-blue-500 text-white' : 'bg-white text-blue-500'}`}
@@ -88,7 +100,7 @@ export default function UserFavorites() {
         {page > 3 && <span className="px-2">…</span>}
 
         {/* 現在のページの前後 */}
-        {page > 2 && (
+        {page > 1 && (
           <Link to={`?page=${page - 1}`} className="px-4 py-2 border rounded bg-white text-blue-500">
             {page - 1}
           </Link>
@@ -97,16 +109,17 @@ export default function UserFavorites() {
         {/* 現在のページ */}
         <span className="px-4 py-2 border rounded bg-blue-500 text-white">{page}</span>
 
+        {/* 現在のページの次のページ */}
         {page < totalPages && (
           <Link to={`?page=${page + 1}`} className="px-4 py-2 border rounded bg-white text-blue-500">
             {page + 1}
           </Link>
         )}
 
+        {/* 省略記号 */}
+        {page < totalPages - 2 && <span className="px-2">…</span>}
+
         {/* 最後のページ */}
-        {totalPages > 1 && page < totalPages - 1 && (
-          <span className="px-2">…</span>
-        )}
         {page < totalPages-1 && (
           <Link
             to={`?page=${totalPages}`}
