@@ -43,16 +43,16 @@ export default function Screen() {
 
         {/* エラーメッセージがあれば表示 */}
         {errorMessage && (
-          <p className="text-red-500 mb-4 text-center">{errorMessage}</p>
+          <p className="text-red-500 mb-4 text-center">メールアドレスかパスワードが違います</p>
         )}
 
 
         <Form method="post" className="space-y-4">
           <input
               type="text"
-              name="name"
+              name="email"
               required
-              placeholder="ユーザー名"
+              placeholder="メールアドレス"
               className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-blue-500 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100"
           />
           <input

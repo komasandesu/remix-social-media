@@ -61,19 +61,20 @@ export async function action({ request }: ActionFunctionArgs) {
     },
   });
 
-  // ユーザー名がアルファベット、数字、アンダーバーのみに限定されているかを確認する
-  const alphaNumericRegex = /^[a-zA-Z0-9_]+$/; // アンダーバーも許可
-  if (!alphaNumericRegex.test(name)) {
-    return { error: "ユーザー名はアルファベット、数字、アンダーバーのみ使用できます。" };
-  }
-
-  if (existingUser) {
-    if (existingUser.name === updateData.name) {
+  // ユーザー名が指定されている場合の重複チェック
+  if (updateData.name) {
+    const alphaNumericRegex = /^[a-zA-Z0-9_]+$/; // アンダーバーも許可
+    if (!alphaNumericRegex.test(name)) {
+      return { error: "ユーザー名はアルファベット、数字、アンダーバーのみ使用できます。" };
+    }
+    if (existingUser && existingUser.name === updateData.name) {
       return { error: "この名前は既に登録されています。" };
     }
-    if (existingUser.email === updateData.email) {
-      return { error: "このメールアドレスは既に登録されています。" };
-    }
+  }
+
+  // メールアドレスの重複チェック
+  if (existingUser && existingUser.email === updateData.email) {
+    return { error: "このメールアドレスは既に登録されています。" };
   }
 
   // ユーザー情報の更新
@@ -84,52 +85,55 @@ export async function action({ request }: ActionFunctionArgs) {
 
   // セッションを更新
   const session = await getSession(request.headers.get("Cookie"));
-  session.set(authenticator.sessionKey, { ...user, name: updateData.name });
+  session.set(authenticator.sessionKey, { ...user, name: updateData.name || userData.name });  // nameがない場合は既存のnameを使用
 
-  // プロフィール更新後に新しいユーザー名を使ってリダイレクト
-  return redirect(`/profile/${updateData.name}`, {
+  // プロフィール更新後にリダイレクト
+  return redirect(`/profile/${updateData.name || userData.name}`, {
     headers: { "Set-Cookie": await commitSession(session) },
   });
 }
-
 
 export default function Profile() {
   const actionData = useActionData<ActionData>(); // アクションの結果を取得
 
   return (
     <div className="container mx-auto p-6 max-w-3xl">
-      <h1 className="text-2xl font-bold mb-4 text-black dark:text-white">
-        プロフィール編集
-      </h1>
+      <h1 className="text-2xl font-bold mb-4">プロフィール編集</h1>
       {actionData?.error && (
-        <p className="text-red-500 dark:text-red-400">{actionData.error}</p>
+        <p className="text-red-500">{actionData.error}</p>
       )}
       {actionData?.success && (
-        <p className="text-green-500 dark:text-green-400">{actionData.success}</p>
+        <p className="text-green-500">{actionData.success}</p>
       )}
       <Form method="post" className="mt-6">
         <input
           type="text"
           name="name"
-          placeholder="ユーザー名"
-          className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-blue-500 bg-white dark:bg-gray-800 text-black dark:text-white mb-4"
+          placeholder="名前"
+          className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400 mb-4"
+        />
+        <input
+          type="email"
+          name="email"
+          placeholder="メールアドレス"
+          className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400 mb-4"
         />
         <input
           type="password"
           name="currentPassword"
           required
           placeholder="現在のパスワード"
-          className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-blue-500 bg-white dark:bg-gray-800 text-black dark:text-white mb-4"
+          className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400 mb-4"
         />
         <input
           type="password"
           name="newPassword"
           placeholder="新しいパスワード（変更する場合）"
-          className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-blue-500 bg-white dark:bg-gray-800 text-black dark:text-white mb-4"
+          className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400 mb-4"
         />
         <button
           type="submit"
-          className="bg-blue-600 dark:bg-blue-700 text-white py-2 px-4 rounded hover:bg-blue-700 dark:hover:bg-blue-800 transition"
+          className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition"
         >
           プロフィールを更新する
         </button>
@@ -137,4 +141,3 @@ export default function Profile() {
     </div>
   );
 }
-
