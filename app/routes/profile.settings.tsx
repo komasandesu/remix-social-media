@@ -30,19 +30,13 @@ export async function action({ request }: ActionFunctionArgs) {
     return { error: "ユーザー情報が見つかりません。" };
   }
 
-  // パスワードの確認（常に必要）
-  const isValidPassword = await bcrypt.compare(currentPassword, userData.password);
-  if (!isValidPassword) {
-    return { error: "現在のパスワードが正しくありません。" };
-  }
-
   // 更新データの準備
   const updateData: any = {};
   if (name) {
     // 名前の形式をチェック
-    const alphaNumericRegex = /^[a-zA-Z0-9]+$/;
+    const alphaNumericRegex = /^[a-zA-Z0-9_]+$/;
     if (!alphaNumericRegex.test(name)) {
-      return { error: "ユーザー名はアルファベットと数字のみ使用できます。" };
+      return { error: "ユーザー名はアルファベット、数字、アンダーバーのみ使用できます。" };
     }
 
     // 他のユーザーと重複していないか確認
@@ -61,6 +55,12 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 
   if (newPassword) {
+    // パスワードの確認が必要
+    const isValidPassword = await bcrypt.compare(currentPassword, userData.password);
+    if (!isValidPassword) {
+      return { error: "現在のパスワードが正しくありません。" };
+    }
+
     updateData.password = await bcrypt.hash(newPassword, 10);
   }
 
