@@ -21,25 +21,22 @@ const PostCard: React.FC<PostCardProps> = ({
     initialFavoriteCount
  }) => {
     return (
-        <div className="bg-white shadow-lg rounded-lg p-6">
+        <div className="bg-white shadow-lg rounded-lg p-6 border border-gray-300 dark:bg-gray-800 dark:shadow-none dark:border-gray-700 dark:text-white">
             <Link
                 to={`/posts/${id}`}
-                className="block text-xl font-semibold text-blue-600 hover:underline mb-2 truncate"
+                className="block text-xl font-medium text-gray-800 hover:underline mb-2 truncate dark:text-gray-200"
                 style={{
-                display: 'block',
-                overflow: 'hidden',
-                whiteSpace: 'nowrap',
-                textOverflow: 'ellipsis',
-                maxWidth: '100%', // 必要に応じて調整可能
+                    display: 'block',
+                    overflow: 'hidden',
+                    whiteSpace: 'nowrap',
+                    textOverflow: 'ellipsis',
+                    maxWidth: '100%', // 必要に応じて調整可能
                 }}
             >
                 {title}
             </Link>
-            <p className="text-gray-600 mb-4">
+            <p className="text-gray-600 mb-4 dark:text-gray-400">
                 {createdAt}
-            </p>
-            <p className="text-gray-700 line-clamp-3 mb-4">
-                {content} {/* 投稿の内容の一部を表示 */}
             </p>
             <div className="flex justify-between items-center">
                 {/* FavoriteButton に初期データを渡す */}
