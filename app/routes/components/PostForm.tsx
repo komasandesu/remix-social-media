@@ -14,31 +14,37 @@ const PostForm: React.FC = () => {
 
     return (
         <Form
-        action={`/resources/posts`} // 投稿用のアクションURL
+            action={`/resources/posts`}
             method="post"
-            className="mb-4"
+            className="mb-4 p-4 border-2 border-gray-300 rounded-lg shadow-md w-full" 
             onSubmit={handleSubmit}
         >
-            <textarea
-                name="title"
-                required
-                className="w-full border rounded p-2"
-                placeholder="タイトルを入力..."
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-            />
-            <textarea
-                name="content"
-                rows={2}
-                required
-                className="w-full border rounded p-2 mt-2"
-                placeholder="コンテンツを入力..."
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-            />
+            <div className="flex items-center mb-4 w-full">
+                <textarea
+                    name="title"
+                    required
+                    className="border border-gray-300 rounded p-2 flex-1"
+                    placeholder="タイトルを入力..."
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                />
+            </div>
+
+            <div className="flex items-center w-full">
+                <textarea
+                    name="content"
+                    rows={2}
+                    required
+                    className="border border-gray-300 rounded p-2 flex-1 resize-y"
+                    placeholder="コンテンツを入力..."
+                    value={content}
+                    onChange={(e) => setContent(e.target.value)}
+                />
+            </div>
+
             <button
                 type="submit"
-                className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition mt-2"
+                className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition mt-4"
             >
                 投稿する
             </button>

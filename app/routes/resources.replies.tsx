@@ -17,6 +17,11 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   if (!title || !content || isNaN(postId)) {
     return json({ error: 'Invalid data' }, { status: 400 });
   }
+
+  // 200文字以上の入力を拒否
+  if (title.length > 2000 || content.length > 2000) {
+    return json({ error: 'タイトルまたはコンテンツは2000文字以内で入力してください。' }, { status: 400 });
+  }
   
   try {
     // リプライを作成
