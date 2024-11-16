@@ -56,26 +56,28 @@ export default function UserProfile() {
 
   return (
     <div className="container mx-auto p-6 max-w-3xl">
-      <div className="bg-white shadow-md rounded-lg p-6">
-        <h1 className="text-2xl font-bold mb-4 text-black">{profileUser.name}さんのプロフィール</h1>
+      <div className="bg-white shadow-md rounded-lg p-6 dark:bg-gray-800 dark:text-gray-100">
+        <h1 className="text-2xl font-bold mb-4 text-black dark:text-gray-100">{profileUser.name}さんのプロフィール</h1>
         <div className="space-y-4">
-          <p className="text-gray-600">Email: {profileUser.email}</p>
-          <p className="text-gray-600">作成日: {profileUser.createdAt}</p>
+          <p className="text-gray-600 dark:text-gray-400">作成日: {user.createdAt}</p>
 
-          <Link to={`/profile/${profileUser.name}/favorite`} className="text-blue-600 hover:underline ml-4">
+          <Link
+            to={`/profile/${profileUser.name}/favorite`}
+            className="text-blue-600 hover:underline ml-4 dark:text-blue-400"
+          >
             お気に入り一覧
           </Link>
 
           {user.id === profileUser.id && (
             <div>
-              <Link to="/profile/settings" className="text-blue-600 hover:underline">
+              <Link to="/profile/settings" className="text-blue-600 hover:underline dark:text-blue-400">
                 プロフィールを編集する
               </Link>
-              
+
               <Form action="/logout" method="post" className="mt-6">
                 <button
                   type="submit"
-                  className="bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600 transition"
+                  className="bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600 transition dark:bg-red-600 dark:hover:bg-red-700"
                 >
                   ログアウト
                 </button>
