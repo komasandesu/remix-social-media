@@ -32,21 +32,19 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 
   // パスワードが変更されている場合は、現在のパスワードを確認
-  let isValidPassword = true;
-  if (newPassword) {
-    isValidPassword = await bcrypt.compare(currentPassword, userData.password);
-    if (!isValidPassword) {
-      return { error: "現在のパスワードが正しくありません。" };
-    }
+  if (newPassword && !currentPassword) {
+    return { error: "現在のパスワードを入力してください。" };
+  }
+
+  if (newPassword && !await bcrypt.compare(currentPassword, userData.password)) {
+    return { error: "現在のパスワードが正しくありません。" };
   }
 
   // 更新データの準備
-  const updateData: any = {};
+  const updateData: Record<string, any> = {};
   if (name) updateData.name = name;
   if (email) updateData.email = email;
-  if (newPassword) {
-    updateData.password = await bcrypt.hash(newPassword, 10);
-  }
+  if (newPassword) updateData.password = await bcrypt.hash(newPassword, 10);
 
   // 同じ名前やメールアドレスがすでに存在するかチェック
   const existingUser = await prisma.user.findFirst({
@@ -55,9 +53,7 @@ export async function action({ request }: ActionFunctionArgs) {
         { name: updateData.name },
         { email: updateData.email },
       ],
-      NOT: {
-        id: user.id, // 自分自身のIDは除外
-      },
+      NOT: { id: user.id }, // 自分自身のIDは除外
     },
   });
 
@@ -85,7 +81,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
   // セッションを更新
   const session = await getSession(request.headers.get("Cookie"));
-  session.set(authenticator.sessionKey, { ...user, name: updateData.name || userData.name });  // nameがない場合は既存のnameを使用
+  session.set(authenticator.sessionKey, { ...user, name: updateData.name || userData.name }); // nameがない場合は既存のnameを使用
 
   // プロフィール更新後にリダイレクト
   return redirect(`/profile/${updateData.name || userData.name}`, {
@@ -121,7 +117,6 @@ export default function Profile() {
         <input
           type="password"
           name="currentPassword"
-          required
           placeholder="現在のパスワード"
           className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400 mb-4"
         />
