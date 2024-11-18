@@ -10,7 +10,7 @@ import PostCard from './components/PostCard';
 import PostForm from './components/PostForm';
 import { useEffect, useRef, useState } from 'react';
 import { favoriteRepository } from '~/models/favorite.server';
-import { authenticator } from '~/services/auth.server';
+import { getAuthenticatedUserOrNull } from '~/services/auth.server';
 
 
 export const loader: LoaderFunction = async ({ request }) => {
@@ -19,13 +19,10 @@ export const loader: LoaderFunction = async ({ request }) => {
   const limit = 20;
 
   const posts = await postRepository.findInfiniteScrollWithoutReplies(page, limit);
-  const user = await authenticator.isAuthenticated(request);
-  if (!user) {
-    return { error: "ユーザーが認証されていません。" };
-  }
+  const user = await getAuthenticatedUserOrNull(request);
 
   // posts にお気に入りデータを追加し、createdAt を JST で成形
-  const postsWithFavoriteData = (await favoriteRepository.postsWithFavoriteData(posts, user.id)).map(post => ({
+  const postsWithFavoriteData = (await favoriteRepository.postsWithFavoriteData(posts, user?.id || null)).map(post => ({
     ...post,
     createdAt: new Date(post.createdAt).toLocaleString("ja-JP", {
       timeZone: "Asia/Tokyo",
