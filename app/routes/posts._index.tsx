@@ -5,20 +5,21 @@ import { json, SerializeFrom, LoaderFunction } from '@remix-run/node';
 import { useLoaderData } from '@remix-run/react';
 
 import { postRepository } from '../models/post.server';
+import { favoriteRepository } from '~/models/favorite.server';
 
 import PostCard from './components/PostCard';
 import PostForm from './components/PostForm';
-import { useEffect, useRef, useState } from 'react';
-import { favoriteRepository } from '~/models/favorite.server';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { getAuthenticatedUserOrNull } from '~/services/auth.server';
 
 
 export const loader: LoaderFunction = async ({ request }) => {
   const url = new URL(request.url);
-  const page = parseInt(url.searchParams.get('page') || '1', 10);
+  const lastId = url.searchParams.get('lastId');
+  const parsedLastId = lastId !== null ? parseInt(lastId, 10) : undefined;
   const limit = 20;
 
-  const posts = await postRepository.findInfiniteScrollWithoutReplies(page, limit);
+  const posts = await postRepository.findInfiniteScrollWithoutReplies(limit, parsedLastId);
   const user = await getAuthenticatedUserOrNull(request);
 
   // posts にお気に入りデータを追加し、createdAt を JST で成形
@@ -49,33 +50,45 @@ type PostType = SerializeFrom<Post> & {
 export default function PostIndex() {
   const { posts: initialPosts, hasNextPage: initialHasNextPage } = useLoaderData<{ posts: PostType[], hasNextPage: boolean }>();
   const [posts, setPosts] = useState(initialPosts);
-  const [page, setPage] = useState(2);
+  const [lastId, setLastId] = useState<number | null>(initialPosts[initialPosts.length - 1]?.id || null);
   const [loading, setLoading] = useState(false);
   const [hasNextPage, setHasNextPage] = useState(initialHasNextPage);
   const observerRef = useRef<HTMLDivElement>(null);
-  const [loadingDelay, setLoadingDelay] = useState(false); // 読み込み遅延用の状態
+  const [loadingDelay, setLoadingDelay] = useState(false);
 
-  const loadMorePosts = async () => {
-    if (!hasNextPage || loading || loadingDelay) return; // 次のページがないか、読み込み中または遅延中なら何もしない
+  const loadMorePosts = useCallback(async () => {
+    if (!hasNextPage || loading || loadingDelay) return;
 
     setLoading(true);
-    setLoadingDelay(true); // 読み込み遅延開始
-    const res = await fetch(`/posts?_data=routes/posts._index&page=${page}`);
-    const data = await res.json();
+    setLoadingDelay(true);
 
-    if (data.posts.length > 0) {
-      setPosts((prevPosts) => [...prevPosts, ...data.posts]);
-      setPage(page + 1);
-      setHasNextPage(data.hasNextPage);
-    } else {
-      setHasNextPage(false);
+    try {
+      const query = lastId !== null ? `&lastId=${encodeURIComponent(lastId)}` : '';
+      const res = await fetch(`/posts?_data=routes/posts._index${query}`);
+      
+      if (!res.ok) {
+        throw new Error('読み込みに失敗しました。');
+      }
+
+      const data = await res.json();
+
+      if (data.posts.length > 0) {
+        setPosts((prevPosts) => [...prevPosts, ...data.posts]);
+        setLastId(data.posts[data.posts.length - 1]?.id || null);
+        setHasNextPage(data.hasNextPage);
+      } else {
+        setHasNextPage(false);
+      }
+    } catch (error) {
+      console.error(error);
+      alert('エラーが発生しました。もう一度お試しください。');
+    } finally {
+      setLoading(false);
+      setTimeout(() => {
+        setLoadingDelay(false);
+      }, 1000);
     }
-
-    setLoading(false);
-    setTimeout(() => {
-      setLoadingDelay(false); // 遅延を解除
-    }, 1000); // 1秒の遅延
-  };
+  }, [hasNextPage, loading, loadingDelay, lastId]);
 
   useEffect(() => {
     const observer = new IntersectionObserver((entries) => {
@@ -83,9 +96,7 @@ export default function PostIndex() {
       if (entry.isIntersecting && hasNextPage && entry.intersectionRatio > 0.95) {
         loadMorePosts();
       }
-    }, {
-      threshold: 0.95,
-    });
+    }, { threshold: 0.95 });
 
     if (observerRef.current) {
       observer.observe(observerRef.current);
@@ -96,7 +107,7 @@ export default function PostIndex() {
         observer.unobserve(observerRef.current);
       }
     };
-  }, [hasNextPage, loading, loadingDelay]); // loadingDelayを依存配列に追加
+  }, [hasNextPage, loadMorePosts]);
 
   return (
     <div className="container mx-auto p-4">
