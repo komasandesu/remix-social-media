@@ -19,6 +19,7 @@ export default defineConfig({
     watch: {
       usePolling: true, // ポーリングモードに設定
       interval: 1000,   // ポーリング間隔（ミリ秒）
+      ignored: ['**/.env', '**/node_modules/**'],
     },
   },
   optimizeDeps: {
