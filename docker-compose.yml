@@ -12,11 +12,11 @@ services:
   app:
     build:
       context: ./ 
-    command: sh -c "npx prisma db push && npx prisma generate && yarn dev"
-    # command: sh -c "yarn dev"
+    # command: sh -c "npx prisma db push && npx prisma generate && yarn dev"
+    command: sh -c "yarn dev"
     environment:
       NODE_ENV: development
-      DATABASE_URL: postgresql://user:password@db:5432/mydatabase
+      DATABASE_URL: ${DATABASE_URL}
     ports:
       - '5173:5173'
       - '5555:5555'

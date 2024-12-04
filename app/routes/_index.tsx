@@ -73,6 +73,12 @@ export default function Index() {
           >
             ログイン
           </Link>
+          <Link
+            to="/posts/new"
+            className="bg-blue-500 dark:bg-blue-400 text-white dark:text-gray-900 hover:bg-blue-700 dark:hover:bg-blue-500 rounded-lg py-3 px-6 text-xl transition duration-300"
+          >
+            投稿する
+          </Link>
         </div>
       </div>
     </div>
