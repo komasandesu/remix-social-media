@@ -1,5 +1,5 @@
 // app/routes/resources.replies.tsx
-import { json, redirect, ActionFunctionArgs } from '@remix-run/node';
+import { redirect, ActionFunctionArgs } from '@remix-run/node';
 import { requireAuthenticatedUser } from '~/services/auth.server';
 import { postRepository } from '~/models/post.server';
 
@@ -8,19 +8,22 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const formData = await request.formData();
   
   // 型ガードを使用して値を取得
-  const title = formData.get('title') as string | null;
-  const content = formData.get('content') as string | null;
+  const title = (formData.get('title') as string | null)?.trim();
+  const content = (formData.get('content') as string | null)?.trim();
   const postId = Number(formData.get('postId'));
   const redirectTo = formData.get('redirectTo') as string | null;
   
   // 入力のバリデーション
   if (!title || !content || isNaN(postId)) {
-    return json({ error: 'Invalid data' }, { status: 400 });
+    return redirect('/posts/new?error=missingFields');
   }
-
-  // 200文字以上の入力を拒否
-  if (title.length > 2000 || content.length > 2000) {
-    return json({ error: 'タイトルまたはコンテンツは2000文字以内で入力してください。' }, { status: 400 });
+  
+  // 文字数制限
+  if (title.length > 200 ) {
+    return redirect('/posts/new?error=tooLongTitle');
+  }
+  if (content.length > 1000) {
+    return redirect('/posts/new?error=tooLongContent');
   }
   
   try {
@@ -36,6 +39,9 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     return redirect(redirectTo || `/posts/${postId}`); // リダイレクト先を元の投稿ページに設定
   } catch (error) {
     console.error('Failed to create reply:', error);
-    return json({ error: 'Failed to create reply' }, { status: 500 });
+    return new Response(
+      JSON.stringify({ error: 'Failed to create reply' }),
+      { status: 500, headers: { 'Content-Type': 'application/json' } }
+    );
   }
 };

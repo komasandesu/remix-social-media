@@ -1,16 +1,7 @@
 // app/routes/_index.tsx
 import { Link, useLoaderData } from '@remix-run/react';
-import type { MetaFunction, LoaderFunction } from '@remix-run/node';
+import type { LoaderFunction } from '@remix-run/node';
 import { prisma } from '~/models/db.server';
-import { json } from '@remix-run/node';
-import { useSyncExternalStore } from 'react';
-
-export const meta: MetaFunction = () => {
-  return [
-    { title: 'Remix Social Media' },
-    { name: 'description', content: 'Remix Social Media' },
-  ];
-};
 
 export const loader: LoaderFunction = async () => {
   const posts = await prisma.post.findMany({
@@ -19,7 +10,11 @@ export const loader: LoaderFunction = async () => {
     take: 10, // 最新10件を取得
   });
 
-  return json({ posts });
+  return new Response(JSON.stringify({ posts }), {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
 };
 
 export default function Index() {

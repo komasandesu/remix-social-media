@@ -2,13 +2,22 @@
 import { LoaderFunctionArgs } from "@remix-run/node";
 import { prisma } from "~/models/db.server";
 import { useLoaderData, Link, Form } from '@remix-run/react';
-import { json } from "@remix-run/node";
 import { getAuthenticatedUserOrNull } from "~/services/auth.server";
 import PostCard from "./components/PostCard";
 import { postRepository } from "~/models/post.server"; // 追加
 import { favoriteRepository } from "~/models/favorite.server";
 
 const FAVORITES_PER_PAGE = 10; // お気に入りの投稿数
+
+type PostCardProps = {
+  id: number;
+  parentId: number | null;
+  title: string;
+  content: string;
+  createdAt: string;
+  initialIsFavorite: boolean; // 初期のお気に入り状態
+  initialFavoriteCount: number; // 初期のお気に入り数
+};
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const { username } = params;
@@ -50,7 +59,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     }),
   }));
 
-  return json({ user, profileUser, favorites: postsWithFavoriteData, page, totalPages });
+  return new Response(
+    JSON.stringify({ user, profileUser, favorites: postsWithFavoriteData, page, totalPages }),
+    { status: 200, headers: { "Content-Type": "application/json" } }
+  );
 }
 
 
@@ -66,7 +78,7 @@ export default function UserFavorites() {
 
         <ul className="space-y-2">
           {favorites.length > 0 ? (
-            favorites.map((favorite) => (
+            favorites.map((favorite:PostCardProps) => (
               <li key={favorite.id}>
                 <PostCard 
                   key={favorite.id} 

@@ -1,7 +1,5 @@
 // app/routes/posts._index.tsx
-import { Post } from '.prisma/client';
-
-import { json, SerializeFrom, LoaderFunction } from '@remix-run/node';
+import { LoaderFunction } from '@remix-run/node';
 import { useLoaderData } from '@remix-run/react';
 
 import { postRepository } from '../models/post.server';
@@ -38,17 +36,31 @@ export const loader: LoaderFunction = async ({ request }) => {
   }));
 
   const hasNextPage = posts.length === limit;
-  return json({ posts: postsWithFavoriteData, hasNextPage });
+  return new Response(
+    JSON.stringify({ posts: postsWithFavoriteData, hasNextPage }), // JSON.stringifyでデータを文字列化
+    {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' }, // Content-Typeを明示的に設定
+    }
+  );
 };
 
 
-type PostType = SerializeFrom<Post> & {
-  initialIsFavorite: boolean;
-  initialFavoriteCount: number;
+type LoaderData = {
+  posts: {
+    id: number;
+    parentId: number | null;
+    title: string;
+    content: string;
+    createdAt: string;
+    initialIsFavorite: boolean;
+    initialFavoriteCount: number;
+  }[];
+  hasNextPage: boolean;
 };
 
 export default function PostIndex() {
-  const { posts: initialPosts, hasNextPage: initialHasNextPage } = useLoaderData<{ posts: PostType[], hasNextPage: boolean }>();
+  const { posts: initialPosts, hasNextPage: initialHasNextPage } = useLoaderData<LoaderData>();
   const [posts, setPosts] = useState(initialPosts);
   const [lastId, setLastId] = useState<number | null>(initialPosts[initialPosts.length - 1]?.id || null);
   const [loading, setLoading] = useState(false);

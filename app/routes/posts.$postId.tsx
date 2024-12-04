@@ -1,7 +1,7 @@
 // app/routes/posts.$postId.tsx
 import type { LoaderFunction, ActionFunction } from '@remix-run/node';
-import { json, redirect } from '@remix-run/node';
-import { useLoaderData } from '@remix-run/react';
+import { redirect } from '@remix-run/node';
+import { useLoaderData, useLocation } from '@remix-run/react';
 import { postRepository } from '~/models/post.server';
 
 import { getAuthenticatedUserOrNull, requireAuthenticatedUser } from '~/services/auth.server';
@@ -58,7 +58,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
       }),
     }));
 
-    return json({
+    return new Response(JSON.stringify({
       post: { 
         ...post, 
         createdAt: formattedPostDate,
@@ -66,6 +66,8 @@ export const loader: LoaderFunction = async ({ request, params }) => {
       user,
       initialIsFavorite: isFavorite,
       initialFavoriteCount: favoriteCount,
+    }), {
+      headers: { "Content-Type": "application/json" }
     });
   } catch (error) {
     throw new Response("Post Not Found", { status: 404 });
@@ -96,6 +98,25 @@ export const action: ActionFunction = async ({ request, params }) => {
 export default function PostShow() {
   const { post, user, initialIsFavorite, initialFavoriteCount } = useLoaderData<typeof loader>();
 
+  // クエリパラメータからエラーメッセージを取得
+  const location = useLocation();
+  const errorType = new URLSearchParams(location.search).get('error');
+  let errorMessage = '';
+
+  switch (errorType) {
+    case 'missingFields':
+      errorMessage = 'タイトルと内容の両方が必要です。';
+      break;
+    case 'tooLongTitle':
+      errorMessage = 'タイトルは 200 文字未満である必要があります。';
+      break;
+    case 'tooLongContent':
+      errorMessage = '内容は 1000 文字未満である必要があります。';
+      break;
+    default:
+      errorMessage = '';
+  }
+
   return (
     <div className="container mx-auto p-6 max-w-3xl">
       <article className="mb-6">
@@ -115,6 +136,12 @@ export default function PostShow() {
       </article>
 
       <ReplyList replies={post.replies} postId={post.id} userId={user?.id || null} />
+      {/* エラーメッセージの表示 */}
+      {errorMessage && (
+        <div className="error-message" style={{ color: 'red' }}>
+          {errorMessage}
+        </div>
+      )}
       <ReplyForm postId={post.id}/>
     </div>
   );

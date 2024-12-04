@@ -1,4 +1,5 @@
-import { json, redirect, ActionFunctionArgs } from '@remix-run/node';
+// app/routes/resources.posts.tsx
+import { redirect, ActionFunctionArgs } from '@remix-run/node';
 import { requireAuthenticatedUser } from '~/services/auth.server';
 import { postRepository } from '~/models/post.server';
 
@@ -6,13 +7,20 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const user = await requireAuthenticatedUser(request);
   const formData = await request.formData();
   
-  // 型ガードを使用して値を取得
-  const title = formData.get('title') as string | null;
-  const content = formData.get('content') as string | null;
+  const title = (formData.get('title') as string | null)?.trim();
+  const content = (formData.get('content') as string | null)?.trim();
 
   // 入力のバリデーション
   if (!title || !content) {
-    return json({ error: 'タイトルとコンテンツは必須です。' }, { status: 400 });
+    return redirect('/posts/new?error=missingFields');
+  }
+
+  // 200文字以上の入力を拒否
+  if (title.length > 200 ) {
+    return redirect('/posts/new?error=tooLongTitle');
+  }
+  if (content.length > 1000) {
+    return redirect('/posts/new?error=tooLongContent');
   }
 
   try {
@@ -23,10 +31,13 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       authorId: user.id,
     });
 
-    // 投稿一覧ページにリダイレクト
-    return redirect('/posts'); 
+    return redirect('/posts');
   } catch (error) {
     console.error('投稿の作成に失敗しました:', error);
-    return json({ error: '投稿の作成に失敗しました' }, { status: 500 });
+    return new Response(
+      JSON.stringify({ error: 'Failed to create post' }),
+      { status: 500, headers: { 'Content-Type': 'application/json' } }
+    );
   }
 };
+

@@ -1,5 +1,5 @@
 // app/routes/resources.edit.tsx
-import { json, redirect, type ActionFunctionArgs } from '@remix-run/node';
+import { redirect, type ActionFunctionArgs } from '@remix-run/node';
 import { postRepository } from '~/models/post.server';
 import { requireAuthenticatedUser } from '~/services/auth.server';
 
@@ -13,7 +13,10 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
   const redirectTo = formData.get('redirectTo') as string | null;
 
   if (!postId || !title || !content) {
-    return json({ error: 'Post ID, title, and content are required' }, { status: 400 });
+    return new Response(
+      JSON.stringify({ error: 'Post ID, title, and content are required' }),
+      { status: 400, headers: { 'Content-Type': 'application/json' } }
+    );
   }
 
   try {
