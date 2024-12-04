@@ -123,7 +123,6 @@ export default function PostIndex() {
 
   return (
     <div className="container mx-auto p-4">
-      <PostForm />
       <div className="flex flex-col space-y-4">
         {posts.map(post => (
           <PostCard 
