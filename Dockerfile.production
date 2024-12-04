@@ -2,8 +2,6 @@ FROM node:22-alpine
 
 # 環境変数の設定
 ENV CHOKIDAR_USEPOLLING=true
-ENV HOST=0.0.0.0
-ENV PORT=3001
 
 # 作業ディレクトリを設定
 WORKDIR /app
@@ -21,8 +19,8 @@ RUN npx prisma generate
 # 本番用にアプリをビルド
 RUN yarn build
 
-# ポートを公開
+# ポート3001を公開
 EXPOSE 3001
 
-# アプリケーションを起動
-CMD ["npx", "remix-serve", "build/"]
+# アプリケーションを起動（ポート3001を指定）
+CMD ["sh", "-c", "HOST=0.0.0.0 PORT=${PORT:-3001} npx remix-serve build/index.js"]
