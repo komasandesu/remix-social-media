@@ -10,7 +10,7 @@ WORKDIR /app
 
 # アプリケーションの依存関係をインストール
 COPY package.json yarn.lock ./
-RUN yarn install --production
+RUN yarn install
 
 # アプリケーションのソースコードをコピー
 COPY . .
