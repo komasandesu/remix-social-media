@@ -1,14 +1,16 @@
 FROM node:22-alpine
 
+# 環境変数の設定
 ENV CHOKIDAR_USEPOLLING=true
+ENV HOST=0.0.0.0
+ENV PORT=3001
 
 # 作業ディレクトリを設定
 WORKDIR /app
 
 # アプリケーションの依存関係をインストール
 COPY package.json yarn.lock ./
-RUN yarn install 
-#--production  # 本番用に依存関係をインストール
+RUN yarn install --production
 
 # アプリケーションのソースコードをコピー
 COPY . .
@@ -23,5 +25,4 @@ RUN yarn build
 EXPOSE 3001
 
 # アプリケーションを起動
-# CMD ["yarn", "start", "--host", "0.0.0.0" ,"--port ${PORT:-3000}"]
-CMD ["sh", "-c", "HOST=0.0.0.0 PORT=${PORT:-3001} npx remix-serve build/index.js"]
+CMD ["npx", "remix-serve", "build/"]
