@@ -3,6 +3,9 @@
 - [Remix](https://remix.run/docs)
 - [Prisma](https://www.prisma.io/docs)
 
+https://github.com/user-attachments/assets/f828aebf-ea5d-452e-82d4-afb84baa5d29
+
+
 ## Development
 
 docker-composeを用いて起動
