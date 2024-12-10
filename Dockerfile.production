@@ -10,7 +10,7 @@ WORKDIR /app
 COPY package.json yarn.lock ./
 RUN yarn install --production
 
-RUN apt-get upgrade openssl -y
+RUN apt upgrade openssl -y
 
 # アプリケーションのソースコードをコピー
 COPY . .
