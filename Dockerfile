@@ -11,7 +11,8 @@ WORKDIR /app
 # COPY . /app
 COPY . .
 
-
+# OpenSSLをインストール
+RUN apk add --no-cache openssl
 
 # npm install で依存関係をインストール
 # RUN npm install
