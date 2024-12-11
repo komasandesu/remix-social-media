@@ -62,10 +62,11 @@ export const loader: LoaderFunction = async ({ request, params }) => {
       post: { 
         ...post, 
         createdAt: formattedPostDate,
-        replies: repliesWithFavoriteInfo },
+        initialIsFavorite: isFavorite, // 初期のお気に入り状態を post に追加
+        initialFavoriteCount: favoriteCount, // 初期のお気に入り数を post に追加
+        replies: repliesWithFavoriteInfo,
+      },
       user,
-      initialIsFavorite: isFavorite,
-      initialFavoriteCount: favoriteCount,
     }), {
       headers: { "Content-Type": "application/json" }
     });
@@ -96,7 +97,7 @@ export const action: ActionFunction = async ({ request, params }) => {
 
 
 export default function PostShow() {
-  const { post, user, initialIsFavorite, initialFavoriteCount } = useLoaderData<typeof loader>();
+  const { post, user } = useLoaderData<typeof loader>();
 
   // クエリパラメータからエラーメッセージを取得
   const location = useLocation();
@@ -130,8 +131,8 @@ export default function PostShow() {
         authorId={post.authorId}
         authorName={post.author.name}
         userId={user?.id || null}
-        initialIsFavorite={initialIsFavorite} // 初期のお気に入り状態
-        initialFavoriteCount={initialFavoriteCount} // 初期のお気に入り数
+        initialIsFavorite={post.initialIsFavorite} // 初期のお気に入り状態
+        initialFavoriteCount={post.initialFavoriteCount} // 初期のお気に入り数
       />
       </article>
 
