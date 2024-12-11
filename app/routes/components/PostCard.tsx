@@ -8,8 +8,6 @@ type PostCardProps = {
     title: string;
     content: string;
     createdAt: string;
-    initialIsFavorite: boolean; // 初期のお気に入り状態
-    initialFavoriteCount: number; // 初期のお気に入り数
 };
 
 const PostCard: React.FC<PostCardProps> = ({  
@@ -17,8 +15,6 @@ const PostCard: React.FC<PostCardProps> = ({
     title,
     content,
     createdAt,
-    initialIsFavorite,
-    initialFavoriteCount
  }) => {
     return (
         <div className="bg-white shadow-lg rounded-lg p-6 border border-gray-300 dark:bg-gray-800 dark:shadow-none dark:border-gray-700 dark:text-white">
@@ -39,11 +35,8 @@ const PostCard: React.FC<PostCardProps> = ({
                 {createdAt}
             </p>
             <div className="flex justify-between items-center">
-                {/* FavoriteButton に初期データを渡す */}
                 <FavoriteButton 
                     PostId={id}
-                    initialIsFavorite={initialIsFavorite}
-                    initialFavoriteCount={initialFavoriteCount}
                 />
             </div>
         </div>

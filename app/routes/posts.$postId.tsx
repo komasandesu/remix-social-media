@@ -130,8 +130,6 @@ export default function PostShow() {
         authorId={post.authorId}
         authorName={post.author.name}
         userId={user?.id || null}
-        initialIsFavorite={initialIsFavorite} // 初期のお気に入り状態
-        initialFavoriteCount={initialFavoriteCount} // 初期のお気に入り数
       />
       </article>
 
