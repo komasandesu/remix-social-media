@@ -1,9 +1,7 @@
 // app/routes/components/PostItem.tsx
 import { Link } from 'react-router-dom';
 import FavoriteButton from './FavoriteButton';
-import { User } from '.prisma/client';
 import PostOptions from './PostOptions';
-import { useSyncExternalStore } from 'react';
 
 // 型定義
 type PostItemProps = {
@@ -15,6 +13,8 @@ type PostItemProps = {
   authorId: string;
   authorName: string;
   userId: string; // 現在のユーザーID
+  initialIsFavorite: boolean; // 初期のお気に入り状態
+  initialFavoriteCount: number; // 初期のお気に入り数
 };
 
 export default function PostItem({
@@ -26,6 +26,8 @@ export default function PostItem({
     authorId,
     authorName,
     userId,
+    initialIsFavorite,
+    initialFavoriteCount
 }: PostItemProps) {
 
     return (
@@ -50,8 +52,11 @@ export default function PostItem({
             </p>
             <p className="text-gray-500 dark:text-gray-400">投稿日時: {createdAt}</p>
             <div className="flex items-center justify-between mt-2">
+                {/* FavoriteButton に初期データを渡す */}
                 <FavoriteButton 
                     PostId={id}
+                    initialIsFavorite={initialIsFavorite}
+                    initialFavoriteCount={initialFavoriteCount}
                 />
                 <PostOptions 
                     postId={id} 

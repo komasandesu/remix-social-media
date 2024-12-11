@@ -141,6 +141,8 @@ export default function UserProfile() {
                 title={post.title}
                 content={post.content}
                 createdAt={post.createdAt}
+                initialIsFavorite={post.initialIsFavorite} // 初期のお気に入り状態
+                initialFavoriteCount={post.initialFavoriteCount} // 初期のお気に入り数
               />
             </li>
           ))

@@ -87,6 +87,8 @@ export default function UserFavorites() {
                   title={favorite.title}
                   content={favorite.content}
                   createdAt={favorite.createdAt}
+                  initialIsFavorite={favorite.initialIsFavorite} // 初期のお気に入り状態
+                  initialFavoriteCount={favorite.initialFavoriteCount} // 初期のお気に入り数
                 />
               </li>
             ))

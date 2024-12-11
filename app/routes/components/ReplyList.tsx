@@ -11,6 +11,8 @@ type Reply = {
   createdAt: string;
   authorId: string;
   author: User;
+  initialIsFavorite: boolean;
+  initialFavoriteCount: number;
 };
 
 export default function ReplyList({
@@ -41,6 +43,8 @@ export default function ReplyList({
             authorId={reply.authorId}
             authorName={reply.author.name}
             userId={userId}
+            initialIsFavorite={reply.initialIsFavorite} // 初期のお気に入り状態
+            initialFavoriteCount={reply.initialFavoriteCount} // 初期のお気に入り数
           />
         ))}
       </ul>

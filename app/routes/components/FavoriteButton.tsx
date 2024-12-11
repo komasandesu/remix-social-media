@@ -5,6 +5,8 @@ import styles from './FavoriteButton.module.css';
 
 interface FavoriteButtonProps {
   PostId: number;
+  initialIsFavorite: boolean;
+  initialFavoriteCount: number;
 }
 
 // サーバーからのレスポンスの型定義
@@ -19,21 +21,17 @@ interface ToggleFavoriteResponse {
   favoriteCount: number;
 }
 
-const FavoriteButton: React.FC<FavoriteButtonProps> = ({ PostId }) => {
-  const fetcher = useFetcher<FavoriteResponse | ToggleFavoriteResponse>();
-  const [isFavorite, setIsFavorite] = useState<boolean | null>(null);
-  const [favoriteCount, setFavoriteCount] = useState<number | null>(null);
+const FavoriteButton: React.FC<FavoriteButtonProps> = ({ 
+  PostId,
+  initialIsFavorite,
+  initialFavoriteCount 
+}) => {
 
-  // 初期データを取得するための fetcher の使用
-  useEffect(() => {
-    const fetchInitialData = async () => {
-      const response = await fetch(`/resources/favorite?PostId=${PostId}`);
-      const data: FavoriteResponse = await response.json();
-      setIsFavorite(data.isFavorite);
-      setFavoriteCount(data.favoriteCount);
-    };
-    fetchInitialData();
-  }, [PostId]); // PostId の変更時にのみデータを再取得
+  const fetcher = useFetcher<FavoriteResponse | ToggleFavoriteResponse>();
+
+  // 初期値を使った描画
+  const [isFavorite, setIsFavorite] = useState<boolean>(initialIsFavorite);
+  const [favoriteCount, setFavoriteCount] = useState<number>(initialFavoriteCount);
 
   // fetcher.data の変更を監視し、状態を更新
   useEffect(() => {
