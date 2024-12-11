@@ -83,9 +83,13 @@ class FavoriteRepository {
   // お気に入りの状態を確認
   async isFavorite(params: { PostId: number; userId: string | null }): Promise<boolean> {
     const { PostId, userId } = params;
+  
+    // userIdがnullの場合はお気に入りではないとみなす
     if (!userId) {
-      return false; // userId がない場合、フォールバックとしてお気に入りではないと見なす
+      return false;
     }
+  
+    // データベースからお気に入り情報を取得
     const favorite = await prisma.favorite.findUnique({
       where: {
         userId_PostId: {
@@ -94,7 +98,9 @@ class FavoriteRepository {
         },
       },
     });
-    return !!favorite;
+  
+    // お気に入り情報が存在するかどうかを返す
+    return Boolean(favorite);
   }
 
   // 特定の投稿のお気に入り数を取得

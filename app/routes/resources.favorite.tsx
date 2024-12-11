@@ -1,6 +1,6 @@
 // app/routes/resources.favorite.tsx
 import { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node';
-import { requireAuthenticatedUser } from '~/services/auth.server';
+import { getAuthenticatedUserOrNull, requireAuthenticatedUser } from '~/services/auth.server';
 import { favoriteRepository } from '~/models/favorite.server';
 
 // POSTリクエスト用のアクション（お気に入りのトグル）
@@ -41,7 +41,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
 // GETリクエスト用のローダー（初期のデータ取得用）
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-  const user = await requireAuthenticatedUser(request);
+  const user = await getAuthenticatedUserOrNull(request);
   const url = new URL(request.url);
   const PostId = Number(url.searchParams.get('PostId'));
 
@@ -56,7 +56,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     // ユーザーのお気に入り状態と、お気に入り数を取得
     const isFavorite = await favoriteRepository.isFavorite({
       PostId,
-      userId: user.id,
+      userId: user?.id ?? null,
     });
     const favoriteCount = await favoriteRepository.countFavorites(PostId);
 
