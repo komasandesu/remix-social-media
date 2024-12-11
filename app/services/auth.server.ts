@@ -78,36 +78,23 @@ export async function refreshSession(request: Request) {
 // 共通認証処理の関数を追加
 export async function requireAuthenticatedUser(request: Request) {
   // セッションをリフレッシュ
-  const cookie = await refreshSession(request);
+  await refreshSession(request);
 
   // 認証チェック
   const user = await authenticator.isAuthenticated(request);
   if (!user) {
-    throw redirect('/login', {
-      headers: { "Set-Cookie": cookie }, // 更新されたセッションを設定
-    });
+    throw redirect("/login");
   }
   return user;
 }
 
-// ユーザーがログインしていない場合に null を返す関数
 export async function getAuthenticatedUserOrNull(request: Request): Promise<User | null> {
-  try {
-    // セッションをリフレッシュ
-    const cookie = await refreshSession(request);
-
-    // 認証チェック
-    const user = await authenticator.isAuthenticated(request);
-    if (!user) {
-      return null;
-    }
-
-    // ヘッダーでセッション更新
-    return new Response(null, {
-      headers: { "Set-Cookie": cookie },
-    }) as unknown as User;
-  } catch (error) {
-    // セッション期限切れやエラー時は null を返す
-    return null;
+  // セッションをリフレッシュ
+  await refreshSession(request);
+  
+  const user = await authenticator.isAuthenticated(request);
+  if (!user) {
+    return null; // ユーザーが認証されていない場合は null を返す
   }
+  return user;
 }
