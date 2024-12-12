@@ -26,7 +26,7 @@ export async function action({ request }: ActionFunctionArgs) {
 export async function loader({ request }: LoaderFunctionArgs) {
   let session = await sessionStorage.getSession(request.headers.get("cookie"));
   let user = session.get("user");
-  if (user) throw redirect("/dashboard");
+  if (user) throw redirect("/posts");
   return data(null);
 }
 
