@@ -6,7 +6,6 @@ import { postRepository } from '../models/post.server';
 import { favoriteRepository } from '~/models/favorite.server';
 
 import PostCard from './components/PostCard';
-import PostForm from './components/PostForm';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { getAuthenticatedUserOrNull } from '~/services/auth.server';
 
