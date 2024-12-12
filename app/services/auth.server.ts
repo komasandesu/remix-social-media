@@ -1,7 +1,7 @@
 // app/services/auth.server.ts
 import { redirect } from '@remix-run/node';
 import { Authenticator } from "remix-auth";
-import {  getSession, commitSession, sessionStorage } from "~/services/session.server";
+import { sessionStorage } from "~/services/session.server";
 import { PrismaClient } from "@prisma/client"; // Prisma クライアントを使ってログインする
 import { User } from ".prisma/client";
 
@@ -59,28 +59,9 @@ authenticator.use(
   "user-pass" // ストラテジーの名前を指定
 );
 
-export async function refreshSession(request: Request) {
-  const session = await getSession(request.headers.get("Cookie"));
-  const now = Date.now();
-  const lastActionTime = session.get("lastActionTime");
-
-  if (lastActionTime && now - lastActionTime > 30 * 60 * 1000) {
-    // 最終アクションから30分以上経過している場合、セッションを破棄
-    throw new Response("Session expired", { status: 401 });
-  }
-
-  // セッションを更新
-  session.set("lastActionTime", now);
-  return commitSession(session);
-}
-
 
 // 共通認証処理の関数を追加
 export async function requireAuthenticatedUser(request: Request) {
-  // セッションをリフレッシュ
-  await refreshSession(request);
-
-  // 認証チェック
   const user = await authenticator.isAuthenticated(request);
   if (!user) {
     throw redirect("/login");
@@ -89,9 +70,6 @@ export async function requireAuthenticatedUser(request: Request) {
 }
 
 export async function getAuthenticatedUserOrNull(request: Request): Promise<User | null> {
-  // セッションをリフレッシュ
-  await refreshSession(request);
-  
   const user = await authenticator.isAuthenticated(request);
   if (!user) {
     return null; // ユーザーが認証されていない場合は null を返す
