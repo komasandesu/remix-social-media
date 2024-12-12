@@ -18,8 +18,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const name = formData.get("name") as string;
   const email = formData.get("email") as string;
 
-  const session = await sessionStorage.getSession(request.headers.get("cookie"));
-  const user = session.get("user");
+  const user = await authenticator.authenticate("user-pass", request);
   if (!user) {
     return { error: "ユーザーが認証されていません。" };
   }
@@ -81,12 +80,12 @@ export async function action({ request }: ActionFunctionArgs) {
   });
 
   // セッションを更新
-  let new_session = await sessionStorage.getSession(request.headers.get("cookie"));
-  new_session.set("user", user);
+  let session = await sessionStorage.getSession(request.headers.get("cookie"));
+  session.set("user", user);
 
   // プロフィール更新後にリダイレクト
   return redirect(`/profile/${updateData.name || userData.name}`, {
-    headers: { "Set-Cookie": await commitSession(new_session) },
+    headers: { "Set-Cookie": await commitSession(session) },
   });
 }
 

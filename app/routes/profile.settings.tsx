@@ -3,8 +3,8 @@ import { ActionFunctionArgs, redirect } from "@remix-run/node";
 import { authenticator } from "~/services/auth.server";
 import { prisma } from "../models/db.server";
 import bcrypt from 'bcrypt';
-import { Form, Link, useActionData } from '@remix-run/react';
-import { commitSession, getSession } from "~/services/session.server";
+import { Form, useActionData } from '@remix-run/react';
+import { commitSession } from "~/services/session.server";
 
 interface ActionData {
   success?: string;
@@ -18,8 +18,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const name = formData.get("name") as string;
   const email = formData.get("email") as string;
 
-  const session = await sessionStorage.getSession(request.headers.get("cookie"));
-  const user = session.get("user");
+  const user = await authenticator.authenticate("user-pass", request);
   if (!user) {
     return { error: "ユーザーが認証されていません。" };
   }

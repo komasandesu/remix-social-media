@@ -1,7 +1,6 @@
 // app/services/auth.server.ts
 import { redirect } from '@remix-run/node';
 import { Authenticator } from "remix-auth";
-import { sessionStorage } from "~/services/session.server";
 import { PrismaClient } from "@prisma/client"; // Prisma クライアントを使ってログインする
 import { User } from ".prisma/client";
 
