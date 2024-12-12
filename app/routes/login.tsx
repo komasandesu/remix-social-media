@@ -7,18 +7,30 @@ import { sessionStorage } from "~/services/session.server";
 // Second, we need to export an action function, here we will use the
 // `authenticator.authenticate method`
 export async function action({ request }: ActionFunctionArgs) {
-  // we call the method with the name of the strategy we want to use and the
-  // request object
-  let user = await authenticator.authenticate("user-pass", request);
+  try {
+    // ユーザーの認証
+    const user = await authenticator.authenticate("user-pass", request);
 
-  console.log(user);
+    // 認証成功した場合、セッションにユーザー情報を保存
+    let session = await sessionStorage.getSession(request.headers.get("cookie"));
+    session.set("user", user);
 
-  let session = await sessionStorage.getSession(request.headers.get("cookie"));
-  session.set("user", user);
+    // ホームページにリダイレクト（セッションのセットを含む）
+    return redirect("/", {
+      headers: { "Set-Cookie": await sessionStorage.commitSession(session) },
+    });
+  } catch (error) {
+    // 認証失敗時にエラー処理を行う
 
-  throw redirect("/", {
-    headers: { "Set-Cookie": await sessionStorage.commitSession(session) },
-  });
+    // 失敗した場合、セッションをクリア
+    let session = await sessionStorage.getSession(request.headers.get("cookie"));
+    session.unset("user");
+
+    // エラーメッセージをURLのクエリパラメータとして設定
+    return redirect("/login?error=Invalid%20credentials", {
+      headers: { "Set-Cookie": await sessionStorage.commitSession(session) },
+    });
+  }
 }
 
 // Finally, we need to export a loader function to check if the user is already
