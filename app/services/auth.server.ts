@@ -3,6 +3,7 @@ import { redirect } from '@remix-run/node';
 import { Authenticator } from "remix-auth";
 import { PrismaClient } from "@prisma/client"; // Prisma クライアントを使ってログインする
 import { User } from ".prisma/client";
+import { sessionStorage } from "~/services/session.server";
 
 
 import { FormStrategy } from "remix-auth-form"; // フォーム戦略のインポート
@@ -61,7 +62,8 @@ authenticator.use(
 
 // 共通認証処理の関数を追加
 export async function requireAuthenticatedUser(request: Request) {
-  const user = await authenticator.authenticate("user-pass", request);
+  let session = await sessionStorage.getSession(request.headers.get("cookie"));
+  let user = session.get("user");
   if (!user) {
     throw redirect("/login");
   }
@@ -69,7 +71,8 @@ export async function requireAuthenticatedUser(request: Request) {
 }
 
 export async function getAuthenticatedUserOrNull(request: Request): Promise<User | null> {
-  const user = await authenticator.authenticate("user-pass", request);
+  let session = await sessionStorage.getSession(request.headers.get("cookie"));
+  let user = session.get("user");
   if (!user) {
     return null; // ユーザーが認証されていない場合は null を返す
   }

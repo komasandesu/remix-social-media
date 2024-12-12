@@ -1,6 +1,6 @@
 // app/routes/dashboard.profile-settings.tsx
 import { ActionFunctionArgs, redirect } from "@remix-run/node";
-import { authenticator } from "~/services/auth.server";
+import { requireAuthenticatedUser } from "~/services/auth.server";
 import { prisma } from "../models/db.server";
 import bcrypt from 'bcrypt';
 import { Form, useActionData } from '@remix-run/react';
@@ -18,7 +18,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const name = formData.get("name") as string;
   const email = formData.get("email") as string;
 
-  const user = await authenticator.authenticate("user-pass", request);
+  const user = await requireAuthenticatedUser(request);
   if (!user) {
     return { error: "ユーザーが認証されていません。" };
   }
