@@ -62,8 +62,7 @@ authenticator.use(
 
 // 共通認証処理の関数を追加
 export async function requireAuthenticatedUser(request: Request) {
-  const session = await sessionStorage.getSession(request.headers.get("cookie"));
-  const user = session.get("user");
+  const user = await authenticator.authenticate("user-pass", request);
   if (!user) {
     throw redirect("/login");
   }
@@ -71,8 +70,7 @@ export async function requireAuthenticatedUser(request: Request) {
 }
 
 export async function getAuthenticatedUserOrNull(request: Request): Promise<User | null> {
-  const session = await sessionStorage.getSession(request.headers.get("cookie"));
-  const user = session.get("user");
+  const user = await authenticator.authenticate("user-pass", request);
   if (!user) {
     return null; // ユーザーが認証されていない場合は null を返す
   }
