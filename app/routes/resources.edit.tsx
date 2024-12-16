@@ -5,6 +5,11 @@ import { requireAuthenticatedUser } from '~/services/auth.server';
 
 export const action = async ({ request, params }: ActionFunctionArgs) => {
   const user = await requireAuthenticatedUser(request);
+  
+  if(user === null){
+    return redirect("/login");
+  }
+  
   const formData = await request.formData();
   
   const postId = formData.get('postId') as string | null;

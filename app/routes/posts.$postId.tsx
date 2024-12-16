@@ -78,7 +78,11 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
 export const action: ActionFunction = async ({ request, params }) => {
   const user = await requireAuthenticatedUser(request);
-
+  
+  if(user === null){
+    return redirect("/login");
+  }
+  
   const formData = new URLSearchParams(await request.text());
   const title = formData.get('title'); // タイトルを取得
   const content = formData.get('content');
