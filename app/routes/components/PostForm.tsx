@@ -23,7 +23,7 @@ const PostForm: React.FC = () => {
                 <textarea
                     name="title"
                     required
-                    className="border border-gray-300 rounded p-2 flex-1"
+                    className="border dark:border-gray-300 dark:text-gray-300 rounded p-2 flex-1"
                     placeholder="タイトルを入力..."
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
@@ -35,7 +35,7 @@ const PostForm: React.FC = () => {
                     name="content"
                     rows={2}
                     required
-                    className="border border-gray-300 rounded p-2 flex-1 resize-y"
+                    className="border dark:border-gray-300 dark:text-gray-300 rounded p-2 flex-1 resize-y"
                     placeholder="コンテンツを入力..."
                     value={content}
                     onChange={(e) => setContent(e.target.value)}

@@ -32,7 +32,7 @@ const ReplyForm: React.FC<ReplyFormProps> = ({ postId, redirectTo, onClose }) =>
         type="text"
         name="title"
         required
-        className="w-full border rounded p-2"
+        className="w-full border dark:border-gray-300 dark:text-gray-300 rounded p-2"
         placeholder="タイトルを入力..."
         value={title}
         onChange={(e) => setTitle(e.target.value)}
@@ -41,7 +41,7 @@ const ReplyForm: React.FC<ReplyFormProps> = ({ postId, redirectTo, onClose }) =>
         name="content"
         rows={4}
         required
-        className="w-full border rounded p-2 mt-2"
+        className="w-full border dark:border-gray-300 dark:text-gray-300 rounded p-2 mt-2"
         placeholder="リプライを入力..."
         value={content}
         onChange={(e) => setContent(e.target.value)}
