@@ -2,13 +2,17 @@
 import { redirect, ActionFunctionArgs } from '@remix-run/node';
 import { requireAuthenticatedUser } from '~/services/auth.server';
 import { postRepository } from '~/models/post.server';
+import { commitSession } from '~/services/session.server';
 
 export const action = async ({ request }: ActionFunctionArgs) => {
-  const user = await requireAuthenticatedUser(request);
-  
-  if(user === null){
-    return redirect("/login");
-  }
+  // user と一緒に session も受け取るように変更
+  const { user, session } = await requireAuthenticatedUser(request);
+
+  const headersForRedirect = {
+    headers: {
+      'Set-Cookie': await commitSession(session),
+    },
+  };
   
   const formData = await request.formData();
   
@@ -41,12 +45,18 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     });
     
     // リダイレクト処理
-    return redirect(redirectTo || `/posts/${postId}`); // リダイレクト先を元の投稿ページに設定
+    return redirect(redirectTo || `/posts/${postId}`, headersForRedirect); // リダイレクト先を元の投稿ページに設定
   } catch (error) {
-    console.error('Failed to create reply:', error);
-    return new Response(
-      JSON.stringify({ error: 'Failed to create reply' }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
-    );
+    // console.error('Failed to create reply:', error);
+    const body = JSON.stringify({ error: 'Failed to create reply' });
+    
+    // ヘッダーを組み立てる
+    const responseHeaders = new Headers(headersForRedirect.headers);
+    responseHeaders.set('Content-Type', 'application/json');
+
+    return new Response(body, {
+      status: 500,
+      headers: responseHeaders,
+    });
   }
 };

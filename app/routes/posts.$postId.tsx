@@ -1,18 +1,20 @@
 // app/routes/posts.$postId.tsx
-import type { LoaderFunction, ActionFunction } from '@remix-run/node';
+import type { LoaderFunction, ActionFunction, MetaFunction } from '@remix-run/node';
 import { redirect } from '@remix-run/node';
 import { useLoaderData, useLocation } from '@remix-run/react';
 import { postRepository } from '~/models/post.server';
-
+import { favoriteRepository } from '~/models/favorite.server';
 import { getAuthenticatedUserOrNull, requireAuthenticatedUser } from '~/services/auth.server';
+import { commitSession } from '~/services/session.server';
+
 
 import ReplyForm from './components/ReplyForm';
 import ReplyList from './components/ReplyList';
 import PostItem from './components/PostItem';
-import { favoriteRepository } from '~/models/favorite.server';
 
 export const loader: LoaderFunction = async ({ request, params }) => {
-  const user = await getAuthenticatedUserOrNull(request); // ユーザー情報を取得
+  // user と session を受け取る(ユーザーがいなくてもsessionは返ってくる)
+  const { user, session } = await getAuthenticatedUserOrNull(request);
   const postId = params.postId ? parseInt(params.postId, 10) : null;
 
   if (!postId) {
@@ -27,69 +29,50 @@ export const loader: LoaderFunction = async ({ request, params }) => {
       return redirect(`/posts/${post.parentId}`);
     }
 
-    // 投稿の createdAt を成形
-    const formattedPostDate = new Date(post.createdAt).toLocaleString("ja-JP", {
-      timeZone: "Asia/Tokyo",
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-      hour12: false,
-    });
+    const formattedPostDate = new Date(post.createdAt).toLocaleString("ja-JP", { /* ... */ });
 
     // 投稿のメインアイテムのお気に入り情報を取得
     const [isFavorite, favoriteCount] = await Promise.all([
       user?.id ? favoriteRepository.isFavorite({ PostId: postId, userId: user?.id || null }) : Promise.resolve(false),
       favoriteRepository.countFavorites(postId)
     ]);
-
-    // posts にお気に入りデータを追加し、createdAt を JST で成形
-    const repliesWithFavoriteInfo = (await favoriteRepository.postsWithFavoriteData(post.replies, user?.id || null)).map(post => ({
-      ...post,
-      createdAt: new Date(post.createdAt).toLocaleString("ja-JP", {
-        timeZone: "Asia/Tokyo",
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-        hour12: false,
-      }),
+    
+    const repliesWithFavoriteInfo = (await favoriteRepository.postsWithFavoriteData(post.replies, user?.id || null)).map(p => ({
+      ...p,
+      createdAt: new Date(p.createdAt).toLocaleString("ja-JP", { /* ... */ }),
     }));
 
-    return new Response(JSON.stringify({
+    // レスポンスを返す時に、セッションを更新するヘッダーを付ける
+    const body = JSON.stringify({
       post: { 
         ...post, 
         createdAt: formattedPostDate,
-        initialIsFavorite: isFavorite, // 初期のお気に入り状態を post に追加
-        initialFavoriteCount: favoriteCount, // 初期のお気に入り数を post に追加
-        replies: repliesWithFavoriteInfo,
+        replies: repliesWithFavoriteInfo 
       },
-      user,
-    }), {
-      headers: { "Content-Type": "application/json" }
+      user, // user オブジェクトか null がここに入る
+      initialIsFavorite: isFavorite,
+      initialFavoriteCount: favoriteCount,
     });
+
+    const headers = new Headers({ "Content-Type": "application/json" });
+    headers.set("Set-Cookie", await commitSession(session));
+
+    return new Response(body, { headers });
+
   } catch (error) {
     throw new Response("Post Not Found", { status: 404 });
   }
 };
 
-
 export const action: ActionFunction = async ({ request, params }) => {
-  const user = await requireAuthenticatedUser(request);
-  
-  if(user === null){
-    return redirect("/login");
-  }
-  
+  // こちらは認証が必須
+  const { user, session } = await requireAuthenticatedUser(request);
+
   const formData = new URLSearchParams(await request.text());
-  const title = formData.get('title'); // タイトルを取得
+  const title = formData.get('title');
   const content = formData.get('content');
-  const postId = parseInt(params.postId || '', 10); // postIdをparamsから取得
-  const authorId = user.id; // 現在のユーザーのIDを設定してください
+  const postId = parseInt(params.postId || '', 10);
+  const authorId = user.id;
 
   if (!title || !content || isNaN(postId)) {
     throw new Response("Invalid Data", { status: 400 });
@@ -97,13 +80,16 @@ export const action: ActionFunction = async ({ request, params }) => {
 
   await postRepository.createReply({ title, content, authorId, parentId: postId });
 
-  return redirect(`/posts/${postId}`);
+  // リダイレクトの時も、ちゃんとヘッダーを付けてセッションを更新
+  return redirect(`/posts/${postId}`, {
+    headers: {
+      "Set-Cookie": await commitSession(session),
+    }
+  });
 };
 
-
-
 export default function PostShow() {
-  const { post, user } = useLoaderData<typeof loader>();
+  const { post, user, initialIsFavorite, initialFavoriteCount } = useLoaderData<typeof loader>();
 
   // クエリパラメータからエラーメッセージを取得
   const location = useLocation();
@@ -137,8 +123,8 @@ export default function PostShow() {
         authorId={post.authorId}
         authorName={post.author.name}
         userId={user?.id || null}
-        initialIsFavorite={post.initialIsFavorite} // 初期のお気に入り状態
-        initialFavoriteCount={post.initialFavoriteCount} // 初期のお気に入り数
+        initialIsFavorite={initialIsFavorite} // 初期のお気に入り状態
+        initialFavoriteCount={initialFavoriteCount} // 初期のお気に入り数
       />
       </article>
 

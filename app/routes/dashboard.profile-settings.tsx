@@ -4,7 +4,7 @@ import { requireAuthenticatedUser } from "~/services/auth.server";
 import { prisma } from "../models/db.server";
 import bcrypt from 'bcrypt';
 import { Form, useActionData } from '@remix-run/react';
-import { commitSession, sessionStorage } from "~/services/session.server";
+import { commitSession } from "~/services/session.server";
 
 interface ActionData {
   success?: string;
@@ -12,16 +12,14 @@ interface ActionData {
 }
 
 export async function action({ request }: ActionFunctionArgs) {
+  // user と一緒に session を受け取る
+  const { user, session } = await requireAuthenticatedUser(request);
+
   const formData = await request.formData();
   const currentPassword = formData.get("currentPassword") as string;
   const newPassword = formData.get("newPassword") as string;
   const name = formData.get("name") as string;
   const email = formData.get("email") as string;
-
-  const user = await requireAuthenticatedUser(request);
-  if (!user) {
-    return { error: "ユーザーが認証されていません。" };
-  }
 
   const userData = await prisma.user.findUnique({
     where: { id: user.id },
@@ -45,32 +43,38 @@ export async function action({ request }: ActionFunctionArgs) {
   if (name) updateData.name = name;
   if (email) updateData.email = email;
   if (newPassword) updateData.password = await bcrypt.hash(newPassword, 10);
-
-  // 同じ名前やメールアドレスがすでに存在するかチェック
-  const existingUser = await prisma.user.findFirst({
-    where: {
-      OR: [
-        { name: updateData.name },
-        { email: updateData.email },
-      ],
-      NOT: { id: user.id }, // 自分自身のIDは除外
-    },
-  });
-
-  // ユーザー名が指定されている場合の重複チェック
-  if (updateData.name) {
-    const alphaNumericRegex = /^[a-zA-Z0-9_]+$/; // アンダーバーも許可
-    if (!alphaNumericRegex.test(name)) {
-      return { error: "ユーザー名はアルファベット、数字、アンダーバーのみ使用できます。" };
-    }
-    if (existingUser && existingUser.name === updateData.name) {
-      return { error: "この名前は既に登録されています。" };
-    }
+  
+  // 何も変更がない場合は、エラーを返す
+  if (Object.keys(updateData).length === 0) {
+    return { error: "変更する項目がありません。" };
   }
 
-  // メールアドレスの重複チェック
-  if (existingUser && existingUser.email === updateData.email) {
-    return { error: "このメールアドレスは既に登録されています。" };
+  // 同じ名前やメールアドレスがすでに存在するかチェック
+  if (name || email) {
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        OR: [
+          ...(name ? [{ name }] : []),
+          ...(email ? [{ email }] : []),
+        ],
+        NOT: { id: user.id }, // 自分自身のIDは除外
+      },
+    });
+    // ユーザー名が指定されている場合の重複チェック
+    if (name) {
+      const alphaNumericRegex = /^[a-zA-Z0-9_]+$/; // アンダーバーも許可
+      if (!alphaNumericRegex.test(name)) {
+        return { error: "ユーザー名はアルファベット、数字、アンダーバーのみ使用できます。" };
+      }
+      if (existingUser && existingUser.name === name) {
+        return { error: "この名前は既に登録されています。" };
+      }
+    }
+
+    // メールアドレスの重複チェック
+    if (email && existingUser && existingUser.email === email) {
+      return { error: "このメールアドレスは既に登録されています。" };
+    }
   }
 
   // ユーザー情報の更新
@@ -82,11 +86,11 @@ export async function action({ request }: ActionFunctionArgs) {
   // プロフィール更新後にリダイレクト
   const updatedUser = {
     ...user,
-    name: updateData.name || userData.name
+    name: updateData.name || userData.name,
+    email: updateData.email || userData.email,
   };
 
   // セッションを更新
-  let session = await sessionStorage.getSession(request.headers.get("cookie"));
   session.set("user", updatedUser);
 
   return redirect(`/profile/${updatedUser.name}`, {
