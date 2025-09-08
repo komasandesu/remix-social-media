@@ -50,7 +50,7 @@ const ReplyForm: React.FC<ReplyFormProps> = ({ postId, redirectTo, onClose }) =>
       <input type="hidden" name="redirectTo" value={redirectTo || `/posts/${postId}`} />
       <button
         type="submit"
-        className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition mt-2"
+        className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition mt-2 dark:text-gray-300"
       >
         リプライを送信
       </button>

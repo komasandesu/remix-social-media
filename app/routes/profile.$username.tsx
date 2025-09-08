@@ -116,7 +116,7 @@ export default function UserProfile() {
         </div>
       </div>
 
-      <h2 className="text-xl font-semibold mt-6">投稿一覧</h2>
+      <h2 className="text-xl font-semibold mt-6 dark:text-gray-100">投稿一覧</h2>
       <ul className="space-y-2">
         {posts.length > 0 ? (
           posts.map((post: PostCardProps) => (
